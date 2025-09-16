@@ -1,0 +1,14 @@
+{
+  "name": "eaeinc",
+  "version": "1.0.0",
+  "description": "Team Charter Link: https://docs.google.com/document/d/1vrtDhfvEznrZ6MjtECMBECAccnSQVgOe-2BqvuxmtZc/edit?usp=sharing",
+  "main": "index.js",
+  "devDependencies": {
+    "@cucumber/gherkin": "^35.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
