@@ -1,5 +1,5 @@
 import React from "react";
-import "./Forum.css"; // ← make sure this exists
+import "./Forum.css";
 
 function Forum() {
   return (
