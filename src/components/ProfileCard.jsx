@@ -1,5 +1,6 @@
 import React, { forwardRef } from "react";
 import "./ProfileCard.css";
+import UpcomingEvents from "./UpcomingEvents.jsx";
 
 const ProfileCard = forwardRef((props, ref) => {
   return (
@@ -15,6 +16,9 @@ const ProfileCard = forwardRef((props, ref) => {
         <button>Edit Profile</button>
         <button>Logout</button>
       </div>
+
+      {/* Upcoming events below profile */}
+      <UpcomingEvents />
     </div>
   );
 });

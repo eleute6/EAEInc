@@ -65,6 +65,7 @@ body {
   width: 25%; /* 25% of screen */
   height: 100%;
   background-color: white;
+  color: #000;
   border-right: 1px solid #ccc;
   padding: 15px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
