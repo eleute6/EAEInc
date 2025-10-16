@@ -53,9 +53,55 @@ body {
 
 .main-layout {
   display: flex;
-  flex-direction: row; /* horizontal layout */
+  flex-direction: row;
   width: 100%;
-  height: calc(100vh - 60px); /* full viewport minus navbar height */
-  margin-top: 60px; /* space below navbar */
+  height: calc(100vh - 60px); /* subtract navbar */
+  margin-top: 60px; /* space for navbar */
   box-sizing: border-box;
+}
+
+/* Left column */
+.profile-card {
+  width: 25%; /* 25% of screen */
+  height: 100%;
+  background-color: white;
+  border-right: 1px solid #ccc;
+  padding: 15px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+/* Middle column */
+.forum-container {
+  width: 50%; /* 50% of screen */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: white;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  overflow: hidden;
+}
+
+/* Right column placeholder */
+.right-column {
+  width: 25%; /* 25% of screen */
+  height: 100%;
+  background-color: #f5f5f5; /* light gray placeholder */
+  border-left: 1px solid #ccc;
+  overflow-y: auto;
+}
+
+/* Optional: responsive stacking */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .profile-card,
+  .forum-container,
+  .right-column {
+    width: 100%;
+    height: auto;
+    margin: 0;
+  }
 }

@@ -12,6 +12,9 @@ function App() {
       <div className="main-layout">
         <ProfileCard />
         <Forum />
+        <div className="right-column">
+          {/* placeholder for right column content */}
+        </div>
       </div>
       <Footer />
     </>
