@@ -54,7 +54,7 @@ body {
 .main-layout {
   display: flex;
   margin-top: 60px; /* leave space for navbar */
-  height: calc(100vh - 60px); /* full viewport minus navbar */
+  height: calc(100vh - 60px);
   width: 100%;
   box-sizing: border-box;
 }

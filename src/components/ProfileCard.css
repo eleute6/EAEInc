@@ -1,13 +1,8 @@
 .profile-card {
-  position: fixed;
-  top: 60px; /* flush under navbar */
-  left: 0;
-  width: 20vw;
-  min-width: 200px;
-  max-width: 300px;
-  height: 30vh;
-  min-height: 100px;
-  max-height: 400px;
+  /* remove fixed, top, left */
+  width: 250px; /* or min/max if desired */
+  flex-shrink: 0;
+  height: 100%;
   padding: 15px;
   background-color: white;
   border-right: 1px solid #ccc;
