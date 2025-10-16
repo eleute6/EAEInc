@@ -53,8 +53,9 @@ body {
 
 .main-layout {
   display: flex;
-  margin-top: 60px; /* leave space for navbar */
-  height: calc(100vh - 60px);
+  flex-direction: row;
+  height: calc(100vh - 60px); /* full viewport minus header */
+  margin-top: 60px; /* leave space for header if header is static */
   width: 100%;
   box-sizing: border-box;
 }

@@ -1,14 +1,12 @@
 .profile-card {
-  /* remove fixed, top, left */
-  width: 250px; /* or min/max if desired */
-  flex-shrink: 0;
-  height: 100%;
-  padding: 15px;
+  width: 250px; /* fixed sidebar width */
+  flex-shrink: 0; /* do not shrink in flex layout */
+  height: 100%; /* fill parent (main-layout) height */
   background-color: white;
   border-right: 1px solid #ccc;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  z-index: 500;
+  padding: 15px;
+  overflow-y: auto; /* scroll if content overflows */
 }
 
 .profile-card:hover {
@@ -54,10 +52,11 @@
   background-color: #003366;
 }
 
+/* Responsive: stack profile card on top on small screens */
 @media (max-width: 768px) {
   .profile-card {
     width: 90%;
-    left: 5%;
-    top: 70px;
+    margin: 0 auto;
+    height: auto;
   }
 }

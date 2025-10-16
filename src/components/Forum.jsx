@@ -1,14 +1,9 @@
 import React from "react";
+import "./Forum.css"; // ← make sure this exists
 
-function Forum({ profileWidth }) {
+function Forum() {
   return (
-    <div
-      className="forum-container"
-      style={{
-        left: `${profileWidth}px`,
-        width: `calc(100% - ${profileWidth}px)`,
-      }}
-    >
+    <div className="forum-container">
       <div className="forum-header">
         <h3>Forum</h3>
         <p>Search bar will go here</p>
