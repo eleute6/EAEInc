@@ -2,10 +2,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%; /* fill parent height */
+  height: 100%;
   background-color: white;
   border-left: 1px solid #ccc;
-  overflow: hidden; /* prevent overflow outside container */
+  overflow: hidden;
 }
 
 .forum-header {
@@ -15,8 +15,7 @@
 }
 
 .forum-feed {
-  flex: 1; /* fill space between header and input */
-  overflow-y: auto;
+  flex: 1;
   padding: 10px;
 }
 
