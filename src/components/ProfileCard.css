@@ -6,12 +6,7 @@
   border-right: 1px solid #ccc;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   padding: 15px;
-  overflow-y: hidden;
-}
-
-.profile-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
 
 .profile-image {

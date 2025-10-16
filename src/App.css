@@ -1,7 +1,7 @@
 #root {
   max-width: 100%;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0;
   text-align: left;
 }
 
@@ -78,6 +78,7 @@ body {
   flex-direction: column;
   height: 100%;
   background-color: white;
+  color: #000;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
   overflow: hidden;
@@ -87,11 +88,15 @@ body {
 .right-column {
   width: 25%; /* 25% of screen */
   height: 100%;
-  background-color: #f5f5f5; /* light gray placeholder */
+  background-color: #f5f5f5;
+  color: #000;
   border-left: 1px solid #ccc;
   overflow-y: auto;
 }
-
+.footer {
+  position: relative;
+  z-index: 10; /* ensure footer is above everything */
+}
 /* Optional: responsive stacking */
 @media (max-width: 768px) {
   .main-layout {
@@ -100,8 +105,8 @@ body {
   .profile-card,
   .forum-container,
   .right-column {
-    width: 100%;
-    height: auto;
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 }
