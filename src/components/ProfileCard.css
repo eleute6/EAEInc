@@ -1,15 +1,21 @@
 .profile-card {
-  position: fixed; /* stays in place when scrolling */
-  top: 60px; /* start directly below navbar */
+  position: fixed;
+  top: 60px; /* below navbar */
   left: 0;
-  width: 250px;
-  padding: 0;
+  width: 20vw; /* width is 20% of viewport width */
+  min-width: 200px; /* never smaller than 200px */
+  max-width: 300px; /* never larger than 300px */
+
+  height: 30vh; /* 30% of viewport height */
+  min-height: 100px; /* never smaller than 100px */
+  max-height: 400px; /* never taller than 400px */
+
+  padding: 15px;
   background-color: white;
   border-right: 1px solid #ccc;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  height: calc(100% - 60px); /* fill remaining vertical space */
-  overflow-y: auto; /* scroll if content is too long */
-  z-index: 500; /* under navbar but above main content */
+  overflow-y: auto;
+  z-index: 500;
 }
 
 .profile-card:hover {
