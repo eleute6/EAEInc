@@ -1,12 +1,27 @@
-function Forum() {
+import React from "react";
+
+function Forum({ profileWidth }) {
   return (
     <div
-      style={{ border: "1px solid #ccc", padding: "10px", background: "white" }}
+      className="forum-container"
+      style={{
+        left: `${profileWidth}px`,
+        width: `calc(100% - ${profileWidth}px)`,
+      }}
     >
-      <h3>Forum</h3>
-      <p>Search bar will go here</p>
-      <p>Post 1: How do I submit a proposal?</p>
-      <p>Post 2: Tips for data management plans</p>
+      <div className="forum-header">
+        <h3>Forum</h3>
+        <p>Search bar will go here</p>
+      </div>
+      <div className="forum-feed">
+        <div className="post">Post 1: How do I submit a proposal?</div>
+        <div className="post">Post 2: Tips for data management plans</div>
+        <div className="post">Post 3: Example post content</div>
+      </div>
+      <div className="forum-input">
+        <textarea placeholder="Write a new post..." />
+        <button>Post</button>
+      </div>
     </div>
   );
 }

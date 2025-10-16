@@ -1,15 +1,13 @@
 .profile-card {
   position: fixed;
-  top: 60px; /* below navbar */
+  top: 60px; /* flush under navbar */
   left: 0;
-  width: 20vw; /* width is 20% of viewport width */
-  min-width: 200px; /* never smaller than 200px */
-  max-width: 300px; /* never larger than 300px */
-
-  height: 30vh; /* 30% of viewport height */
-  min-height: 100px; /* never smaller than 100px */
-  max-height: 400px; /* never taller than 400px */
-
+  width: 20vw;
+  min-width: 200px;
+  max-width: 300px;
+  height: 30vh;
+  min-height: 100px;
+  max-height: 400px;
   padding: 15px;
   background-color: white;
   border-right: 1px solid #ccc;
@@ -23,34 +21,28 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* keep the rest as-is */
 .profile-image {
   width: 100px;
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .profile-name {
-  font-size: 1.2rem;
   font-weight: bold;
+  font-size: 1.2rem;
   color: #003366;
   margin-bottom: 5px;
 }
 
 .profile-score {
   background-color: #f2f2f2;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  margin-top: 10px;
-  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
   color: #333;
-}
-
-.profile-actions {
-  margin-top: 15px;
+  display: inline-block;
 }
 
 .profile-actions button {
@@ -58,9 +50,9 @@
   color: white;
   border: none;
   border-radius: 5px;
-  padding: 8px 15px;
+  padding: 6px 12px;
   cursor: pointer;
-  margin: 5px;
+  margin-right: 5px;
 }
 
 .profile-actions button:hover {
@@ -69,8 +61,8 @@
 
 @media (max-width: 768px) {
   .profile-card {
-    max-width: 90%;
-    top: 10px;
-    left: 10px;
+    width: 90%;
+    left: 5%;
+    top: 70px;
   }
 }

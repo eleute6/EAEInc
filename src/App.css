@@ -46,3 +46,25 @@
   padding-top: 60px; /* leave space for navbar */
   padding: 20px;
 }
+
+body {
+  margin: 0; /* remove default body margin */
+}
+
+.main-layout {
+  display: flex;
+  margin-top: 60px; /* leave space for navbar */
+  height: calc(100vh - 60px); /* full viewport minus navbar */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Profile card already has fixed width, height handled internally */
+.right-section {
+  flex: 1; /* placeholder, will take remaining space on right */
+}
+
+/* optional: scrollbar for right section if needed */
+.right-section {
+  overflow-y: auto;
+}
