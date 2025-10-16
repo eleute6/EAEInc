@@ -40,3 +40,9 @@
 .read-the-docs {
   color: #888;
 }
+
+.main-content {
+  margin-left: 250px; /* leave space for profile card */
+  padding-top: 60px; /* leave space for navbar */
+  padding: 20px;
+}

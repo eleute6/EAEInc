@@ -1,11 +1,20 @@
+import "./ProfileCard.css";
+
 function ProfileCard() {
   return (
-    <div
-      style={{ border: "1px solid #ccc", padding: "10px", background: "white" }}
-    >
-      <h3>Profile</h3>
-      <p>Username: John Doe</p>
-      <p>Contribution Score: 10</p>
+    <div className="profile-card">
+      <img
+        src="/profile-placeholder.jpg"
+        alt="Profile"
+        className="profile-image"
+      />
+      <h3 className="profile-name">John Doe</h3>
+      <div className="profile-score">Contribution Score: 10</div>
+
+      <div className="profile-actions">
+        <button>Edit Profile</button>
+        <button>Logout</button>
+      </div>
     </div>
   );
 }
