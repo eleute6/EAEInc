@@ -6,7 +6,7 @@
   border-right: 1px solid #ccc;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   padding: 15px;
-  overflow-y: auto; /* scroll if content overflows */
+  overflow-y: hidden;
 }
 
 .profile-card:hover {
