@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import "./MainArea.css";
 
 function MainArea() {
-  // State to store the current input text
   const [inputText, setInputText] = useState("");
 
-  // State to store the list of posts
   const [posts, setPosts] = useState([
     {
       id: 1,
@@ -19,24 +17,26 @@ function MainArea() {
     },
   ]);
 
-  // Function to handle posting
+  // Add a new post
   const handlePost = () => {
-    if (inputText.trim() === "") return; // ignore empty posts
+    if (inputText.trim() === "") return;
 
     const newPost = {
-      id: Date.now(), // unique ID
+      id: Date.now(),
       author: "Erin McNulty",
       content: inputText,
     };
 
-    // Add the new post to the TOP of the list
     setPosts([newPost, ...posts]);
-
-    // Clear the input field
     setInputText("");
   };
 
-  // Allow pressing Enter to submit
+  // Delete a post by id
+  const handleDelete = (id) => {
+    setPosts(posts.filter((post) => post.id !== id));
+  };
+
+  // Allow Enter to submit
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -46,11 +46,11 @@ function MainArea() {
 
   return (
     <div className="Main">
-      {/* LEFT SIDE PROFILE */}
+      {/* LEFT SIDE */}
       <div className="Lside">
         <div className="Profile">
           <img
-            src="/MerrimackCollegeLogo.png"
+            src="/profiletest.png"
             alt="profile"
             style={{ height: "60px", borderRadius: "50%", margin: "1rem" }}
           />
@@ -58,11 +58,10 @@ function MainArea() {
         </div>
       </div>
 
-      {/* CENTER POSTS FEED */}
+      {/* CENTER FEED */}
       <div className="MainArea">
-        {/* Post input bar */}
         <div className="Post">
-          <img src="/MerrimackCollegeLogo.png" alt="profile" />
+          <img src="/profiletest.png" alt="profile" />
           <input
             type="text"
             placeholder="What's on your mind?"
@@ -75,14 +74,22 @@ function MainArea() {
           </button>
         </div>
 
-        {/* Render all posts */}
+        {/* Render posts */}
         {posts.map((post) => (
           <div className="Posted" key={post.id}>
             <div className="poster">
-              <img src="/MerrimackCollegeLogo.png" alt="profile" />
-              <p>
-                <strong>{post.author}</strong>
-              </p>
+              <div className="poster-left">
+                <img src="/profiletest.png" alt="profile" />
+                <p>
+                  <strong>{post.author}</strong>
+                </p>
+              </div>
+              <button
+                className="deleteButton"
+                onClick={() => handleDelete(post.id)}
+              >
+                ✖
+              </button>
             </div>
             <p className="content">{post.content}</p>
           </div>

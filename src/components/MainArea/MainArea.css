@@ -156,3 +156,30 @@
 .postButton:hover {
   background-color: #005bb5;
 }
+
+/* Delete button */
+.deleteButton {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.deleteButton:hover {
+  color: red;
+}
+
+/* Poster row adjustment */
+.poster {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.poster-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
