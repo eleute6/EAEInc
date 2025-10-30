@@ -1,68 +1,84 @@
 .Main {
   display: flex;
-  justify-content: space-between;
-}
-
-.Rside {
-  height: 50rem;
-  width: 21%;
-  left: 0;
-  flex-wrap: wrap;
-}
-
-.MainArea {
-  display: grid;
-  width: 60%;
-  height: 30rem;
   justify-content: center;
+  background-color: #f0f2f5;
+  padding: 2rem 0;
 }
 
-.message {
-  display: grid;
-  height: 25rem;
-  width: 100%;
-  margin-left: 5%;
-}
-
-.Post {
-  margin-top: 5%;
+/* LEFT SIDE */
+.Lside {
+  width: 20%;
   display: flex;
-  width: 80%;
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* MAIN CENTER AREA */
+.MainArea {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* RIGHT SIDE */
+.Rside {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Post input area */
+.Post {
+  display: flex;
+  align-items: center;
   background-color: white;
-  margin-left: 0;
+  border-radius: 10px;
+  width: 100%;
+  padding: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .Post > img {
   height: 45px;
-  border-radius: 50%;
   width: 45px;
-  margin: 15px;
-  padding-top: 9px;
+  border-radius: 50%;
+  margin-right: 1rem;
 }
 
-input[type="Mind"] {
-  width: 50%;
-  margin: 15px 0;
-  height: 4rem;
-  display: inline;
+.Post input {
+  flex: 1;
+  height: 3rem;
   border: 1px solid #ccc;
-  border-radius: 12px;
-  margin-left: 0;
-  box-sizing: border-box;
+  border-radius: 20px;
+  padding: 0 1rem;
+  outline: none;
 }
 
+/* Individual posted message */
 .Posted {
-  display: grid;
-  height: auto;
-  width: 80%;
-  align-items: flex-start;
   background-color: white;
-  margin-left: 0;
-  margin-top: 29px;
+  width: 100%;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .poster {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.poster img {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+}
+
+.content {
+  margin-left: 3.5rem;
 }

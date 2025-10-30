@@ -4,27 +4,61 @@ import "./MainArea.css";
 function MainArea() {
   return (
     <div className="Main">
-      <div classname="Rside">
+      {/* Left side (profile area) */}
+      <div className="Lside">
         <div className="Profile">
           <img
-            scr="/MerrimackCollegeLogo.png"
-            alt="dp"
-            style={{ height: "60px", padding: "1rem" }}
+            src="/MerrimackCollegeLogo.png"
+            alt="profile"
+            style={{ height: "60px", borderRadius: "50%", margin: "1rem" }}
           />
-          Erin McNulty
+          <p>Erin McNulty</p>
         </div>
-        <div className="pro"></div>
-        <div className="MainArea">
-          <div className="message">
-            <div className="Post">
-              <img src="MerrimackCollegeLogo.png" alt="PIC" />
-              <input type="Mind" placeholder="Search" />
-            </div>
-          </div>
+      </div>
+
+      {/* Center (main posts feed) */}
+      <div className="MainArea">
+        <div className="Post">
+          <img src="/MerrimackCollegeLogo.png" alt="profile" />
+          <input type="text" placeholder="What's on your mind?" />
         </div>
+
         <div className="Posted">
-          <div className="test"></div>
+          <div className="poster">
+            <img src="/MerrimackCollegeLogo.png" alt="profile" />
+            <p>
+              <strong>John Doe</strong>
+            </p>
+          </div>
+          <p className="content">Just a placeholder post to test the layout!</p>
         </div>
+
+        <div className="Posted">
+          <div className="poster">
+            <img src="/MerrimackCollegeLogo.png" alt="profile" />
+            <p>
+              <strong>Jane Smith</strong>
+            </p>
+          </div>
+          <p className="content">Another example of a post in the feed.</p>
+        </div>
+
+        <div className="Posted">
+          <div className="poster">
+            <img src="/MerrimackCollegeLogo.png" alt="profile" />
+            <p>
+              <strong>Mike Johnson</strong>
+            </p>
+          </div>
+          <p className="content">
+            Trying out the new forum layout. Looks pretty clean!
+          </p>
+        </div>
+      </div>
+
+      {/* Right side (future content area) */}
+      <div className="Rside">
+        <p>Right side content (placeholder)</p>
       </div>
     </div>
   );
