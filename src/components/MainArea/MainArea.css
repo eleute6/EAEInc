@@ -140,3 +140,19 @@
     width: 95vw;
   }
 }
+
+.postButton {
+  background-color: #0073e6;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.postButton:hover {
+  background-color: #005bb5;
+}
