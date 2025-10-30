@@ -4,7 +4,6 @@ import "./MainArea.css";
 function MainArea() {
   return (
     <div className="Main">
-      {/* Left side (profile area) */}
       <div className="Lside">
         <div className="Profile">
           <img
@@ -16,7 +15,6 @@ function MainArea() {
         </div>
       </div>
 
-      {/* Center (main posts feed) */}
       <div className="MainArea">
         <div className="Post">
           <img src="/MerrimackCollegeLogo.png" alt="profile" />
@@ -42,21 +40,8 @@ function MainArea() {
           </div>
           <p className="content">Another example of a post in the feed.</p>
         </div>
-
-        <div className="Posted">
-          <div className="poster">
-            <img src="/MerrimackCollegeLogo.png" alt="profile" />
-            <p>
-              <strong>Mike Johnson</strong>
-            </p>
-          </div>
-          <p className="content">
-            Trying out the new forum layout. Looks pretty clean!
-          </p>
-        </div>
       </div>
 
-      {/* Right side (future content area) */}
       <div className="Rside">
         <p>Right side content (placeholder)</p>
       </div>
