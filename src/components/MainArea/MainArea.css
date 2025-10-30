@@ -1,0 +1,68 @@
+.Main {
+  display: flex;
+  justify-content: space-between;
+}
+
+.Rside {
+  height: 50rem;
+  width: 21%;
+  left: 0;
+  flex-wrap: wrap;
+}
+
+.MainArea {
+  display: grid;
+  width: 60%;
+  height: 30rem;
+  justify-content: center;
+}
+
+.message {
+  display: grid;
+  height: 25rem;
+  width: 100%;
+  margin-left: 5%;
+}
+
+.Post {
+  margin-top: 5%;
+  display: flex;
+  width: 80%;
+  justify-content: flex-start;
+  background-color: white;
+  margin-left: 0;
+}
+
+.Post > img {
+  height: 45px;
+  border-radius: 50%;
+  width: 45px;
+  margin: 15px;
+  padding-top: 9px;
+}
+
+input[type="Mind"] {
+  width: 50%;
+  margin: 15px 0;
+  height: 4rem;
+  display: inline;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  margin-left: 0;
+  box-sizing: border-box;
+}
+
+.Posted {
+  display: grid;
+  height: auto;
+  width: 80%;
+  align-items: flex-start;
+  background-color: white;
+  margin-left: 0;
+  margin-top: 29px;
+}
+
+.poster {
+  display: flex;
+  justify-content: space-between;
+}

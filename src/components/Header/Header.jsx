@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./Header.css";
+import MainArea from "../MainArea/MainArea.jsx";
 
 function Header() {
   return (
@@ -18,9 +19,12 @@ function Header() {
         <div className="middle-header">
           <a href="#home">Home</a>
           <a href="#instruments">Instrument Consortium</a>
+          <a href="#uploads">Upload Instruments</a>
+
           <a href="#admin">Admin</a>
         </div>
       </div>
+      <MainArea />
     </div>
   );
 }
