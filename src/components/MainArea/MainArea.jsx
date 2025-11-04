@@ -98,7 +98,7 @@ function MainArea() {
 
       {/* RIGHT SIDE */}
       <div className="Rside">
-        <p>Right side content (placeholder)</p>
+        <p>Resources</p>
       </div>
     </div>
   );
