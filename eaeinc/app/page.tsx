@@ -1,7 +1,14 @@
 export default function Home() {
   return (
     <main className="flex">
-      <h1>EAEInc Community Research Page</h1>
+      <section>{/* UserInfo */}</section>
+
+      <section>
+        {/* PostForm */}
+        {/* PostFeed */}
+      </section>
+
+      <section>{/* Widget */}</section>
     </main>
   );
 }
