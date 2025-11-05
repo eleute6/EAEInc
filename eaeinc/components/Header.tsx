@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link"; // <-- correct Link
-import { HomeIcon, SearchIcon } from "lucide-react";
+import { BookOpenIcon, HomeIcon, SearchIcon } from "lucide-react";
 
 function Header() {
   return (
@@ -19,11 +19,21 @@ function Header() {
         </form>
       </div>
 
-      <div>
+      {/* Navigation links */}
+      <div className="flex space-x-6">
+        {/* Home link */}
         <Link href="/">
-          <div className="flex flex-col items-center icon">
+          <div className="flex flex-col items-center icon cursor-pointer">
             <HomeIcon className="h-5 w-5" />
             <span className="text-sm mt-1">Home</span>
+          </div>
+        </Link>
+
+        {/* Research link */}
+        <Link href="/research">
+          <div className="flex flex-col items-center icon cursor-pointer">
+            <BookOpenIcon className="h-5 w-5" />
+            <span className="text-sm mt-1">Consortium</span>
           </div>
         </Link>
       </div>

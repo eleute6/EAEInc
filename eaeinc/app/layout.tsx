@@ -25,16 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="min-h-screen flex flex-col">
         {/* TOASTER */}
 
-        <header>
+        <header className="border-b sticky top-0 bg-white z-50">
           <Header />
         </header>
 
-        <div>
+        <div className="bg-[#F4F2ED] flex-1 w-full">
           <main>{children}</main>
         </div>
       </body>
