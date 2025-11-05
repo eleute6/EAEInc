@@ -1,13 +1,14 @@
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import React from "react";
 
+// WILL EVENTUALLY NEED TO HAVE ASYNC BEFORE IT
 function UserInformation() {
   //const user = await currentUser();
   // Dummy user data for now
   const user = {
     firstName: "Alice",
     lastName: "Brown",
-    imageUrl: "", // leave empty to see fallback initials
+    imageUrl: "",
   };
 
   const firstName = user.firstName;
