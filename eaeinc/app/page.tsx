@@ -1,7 +1,11 @@
+import UserInformation from "@/components/UserInformation";
+
 export default function Home() {
   return (
     <main className="flex">
-      <section>{/* UserInfo */}</section>
+      <section>
+        <UserInformation />
+      </section>
 
       <section>
         {/* PostForm */}
