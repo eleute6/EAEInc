@@ -1,17 +1,37 @@
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import React from "react";
-async function UserInformation() {
-  //const user = await currentUser()
-  const initials = "AB";
-  return (
-    <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-md shadow-sm">
-      {/* Avatar */}
-      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 text-white font-bold text-lg">
-        {initials}
-      </div>
 
-      {/* User info placeholder */}
-      <div>
-        <p className="font-semibold">First Last</p>
+function UserInformation() {
+  //const user = await currentUser();
+  // Dummy user data for now
+  const user = {
+    firstName: "Alice",
+    lastName: "Brown",
+    imageUrl: "", // leave empty to see fallback initials
+  };
+
+  const firstName = user.firstName;
+  const lastName = user.lastName;
+  const imageUrl = user.imageUrl;
+
+  return (
+    <div className="flex flex-col justify-center items-center bg-white mr-6 rounded-lg border py-4 px-6 space-y-2">
+      <Avatar className="w-16 h-16">
+        {imageUrl ? (
+          <AvatarImage src={imageUrl} />
+        ) : (
+          <AvatarFallback className="flex items-center justify-center bg-blue-500 text-white font-bold w-full h-full rounded-full">
+            {firstName.charAt(0)}
+            {lastName.charAt(0)}
+          </AvatarFallback>
+        )}
+      </Avatar>
+
+      {/* Dummy user info */}
+      <div className="text-center">
+        <p className="font-semibold">
+          {firstName} {lastName}
+        </p>
         <p className="text-sm text-gray-500">Faculty</p>
       </div>
     </div>
