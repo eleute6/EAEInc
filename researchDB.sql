@@ -1,8 +1,11 @@
+-- Merrimack College Community Research Page Database
+
 drop database if exists ResearchPageDB;
 create database ResearchPageDB;
 use ResearchPageDB;
 
 -- User Info Table
+-- Stores information relevant to identify users
 create table UserInfo (
     emailID varchar(100) primary key,   
     userName varchar(100) not null,     
@@ -13,6 +16,7 @@ create table UserInfo (
 );
 
 -- Instrument Table
+-- Stores information about a given instrument
 create table Instrument (
     instrumentID int auto_increment primary key,
     title varchar(255) not null,
@@ -25,6 +29,7 @@ create table Instrument (
 );
 
 -- Forum Table
+-- Stores information about a given forum post
 create table Forum (
     forumID int auto_increment primary key,
     title varchar(255) not null,
@@ -37,6 +42,7 @@ create table Forum (
 );
 
 -- Forum comment table
+-- Stores information about a given forum comment
 create table ForumComment (
 	commentID int auto_increment primary key,
     forumID int not null,
@@ -50,6 +56,7 @@ create table ForumComment (
 
 
 -- Upcoming Events Table
+-- Stores information about all events listed in upcoming events section
 create table UpcomingEvents (
     eventID int auto_increment primary key,
     title varchar(255) not null,
@@ -62,6 +69,7 @@ create table UpcomingEvents (
 );
 
 -- Event attendees table
+-- Stores attendee information for each listed event
 create table eventAttendees (
 	eventID int not null,
     attendeeEmailID varchar(100), 
