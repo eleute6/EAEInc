@@ -1,0 +1,34 @@
+<html lang = "en">
+    <head>
+        <script src = "https://accounts.google.com/gsi/client" async> </script> <!-- IMPORT GOOGLE LIBRARY FOR USER FUNCTIONS -->
+        <script> 
+            //FUNCTION FOR TOKEN RETRIEVAL
+            function tRetrieve(token) {
+                let baseURL = token.split(".")[1]; //Retrieve URL from returned data token
+                let modURL = baseURL.replace(/-/g, "+").replace(/_/g, "/"); //Fix the URL
+                //Below: Retrieve the JSON parsing of info for us to read later for profile making.
+                let json = decodeURIComponent(atob(modURL).split("").map(function(c) { return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)}).join(""));
+                return JSON.parse(json);
+            }
+
+            //FUNCTION FOR INFORMATION RETRIEVAL
+            function iRetrieve(response) {
+                const payload = decodeJWT(response.credential);
+                let data = [payload.name, payload.picture, payload.email];
+                return data;
+            }
+        </script>
+    </head>
+    <body>
+        <!-- ID: The Google ID Services Setting Preset -->
+        <!-- Data-Callback: The Method to Retrieve Data With -->
+        <!-- Client-ID: The Client ID for our Project - NEED TO PLACE INTO PROD ENVIRO -->
+        <div 
+        id = "g_id_onload" 
+        data-auto-prompt = "false"
+        data-callback = "iRetrieve"
+        data-client-id = "765060678442-gg76tpqg6ruerm5oouqm2scin1jat679.apps.googleusercontent.com"
+        ></div>
+        <div class="g_id_signin"></div>
+    </body>
+</html>
