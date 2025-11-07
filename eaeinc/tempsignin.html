@@ -13,7 +13,7 @@
 
             //FUNCTION FOR INFORMATION RETRIEVAL
             function iRetrieve(response) {
-                const payload = decodeJWT(response.credential);
+                const payload = tRetrieve(response.credential);
                 let data = [payload.name, payload.picture, payload.email];
                 return data;
             }
