@@ -59,9 +59,9 @@ public class ServerHosting {
             // STEP 1: Establish Pathing
             String path = exchange.getRequestURI().getPath();
             if (path.equals("/")) {
-                //path = SIGN-IN PAGE;
+                path = "page.tsx";
             }
-
+            
             // STEP 2: Send 404 if File Doesn't Exist
             File file = new File(DIR + path);
             if (!file.exists()) {
