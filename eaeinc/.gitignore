@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-/google-api-java-client
 /.pnp
 .pnp.*
 .yarn/*
