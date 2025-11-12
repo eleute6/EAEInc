@@ -1,6 +1,13 @@
 {
     "configurations": [
         {
+            "type": "java",
+            "name": "ServerHosting",
+            "request": "launch",
+            "mainClass": "ServerHosting",
+            "projectName": "EAEInc_234df591"
+        },
+        {
             "name": "Containers: Node.js Launch",
             "type": "docker",
             "request": "launch",

@@ -13,9 +13,22 @@
 
             //FUNCTION FOR INFORMATION RETRIEVAL
             function iRetrieve(response) {
-                const payload = tRetrieve(response.credential);
-                let data = [payload.name, payload.picture, payload.email];
-                return data;
+                const id_token = response.credential; 
+                const payload = tRetrieve(id_token);
+
+                fetch("http://localhost:5500/api/auth/google", {
+                    method: "POST",
+                    headers: {
+                    "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ id_token: id_token })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("Server response:", data);
+                alert("Server response: " + JSON.stringify(data));
+            })
+            .catch(err => console.error("Error sending token:", err));
             }
         </script>
     </head>
@@ -27,7 +40,7 @@
         id = "g_id_onload" 
         data-auto-prompt = "false"
         data-callback = "iRetrieve"
-        data-client-id = "765060678442-gg76tpqg6ruerm5oouqm2scin1jat679.apps.googleusercontent.com"
+        data-client-id = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com"
         ></div>
         <div class="g_id_signin"></div>
     </body>
