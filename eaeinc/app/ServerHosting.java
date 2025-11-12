@@ -35,7 +35,7 @@ import com.google.api.client.json.gson.GsonFactory;
  */
 public class ServerHosting {
     // PRIVATE MEMBERS //
-    private static final String DIR = "app";
+    private static final String DIR = System.getProperty("user.dir");
     private static final Gson gson = new Gson();
     private static final String CLIENT_ID = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com";
     private static final String DATABASE_URI = "";
@@ -52,6 +52,7 @@ public class ServerHosting {
         s.setExecutor(null);
         s.start();
         System.out.println("SERVER RUNNING ON: PORT 5500");
+        System.out.println("Serving files from: " + DIR);
     }
 
     static class StaticHandler implements HttpHandler {
@@ -59,12 +60,18 @@ public class ServerHosting {
         public void handle(HttpExchange exchange) throws IOException {
             // STEP 1: Establish Pathing
             String path = exchange.getRequestURI().getPath();
-            if (path.equals("/")) {
-                path = "page.tsx";
+            if (path.equals("/") || path.isEmpty()) {
+                path = "/index.html";
             }
-            
+
             // STEP 2: Send 404 if File Doesn't Exist
-            File file = new File(DIR + path);
+            File file = new File(DIR, path);
+
+            //TESTING
+            System.out.println("Requested path: " + path);
+            System.out.println("Resolved file: " + file.getAbsolutePath());
+            //
+
             if (!file.exists()) {
                 exchange.sendResponseHeaders(404, -1);
                 return;
@@ -121,6 +128,12 @@ public class ServerHosting {
                     responseJson.addProperty("name", name);
                     responseJson.addProperty("email", email);
                     responseJson.addProperty("picture", picture);
+
+                    //STEP 4 : Redirect by HTTP to Other Page
+                    exchange.getResponseHeaders().add("Location", "/user/page.tsx");
+                    exchange.sendResponseHeaders(302, -1);
+                    exchange.close();
+                    return;
                 } else { //If the user is invalid, will redirect to ERROR_PAGE
                     responseJson.addProperty("status", "invalid");
                 }
