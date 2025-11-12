@@ -36,5 +36,7 @@
         "eaeinc/google-api-java-client/libs/opencensus-contrib-http-util-0.31.1.jar",
         "eaeinc/google-api-java-client/libs/protobuf-java-3.21.2.jar",
         "eaeinc/google-api-java-client/libs/xpp3-1.1.4c.jar"
-    ]
+    ],
+    "java.compile.nullAnalysis.mode": "automatic",
+    "liveServer.settings.port": 5501
 }

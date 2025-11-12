@@ -39,16 +39,18 @@ public class ServerHosting {
     private static final String CLIENT_ID = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com";
     private static final String DATABASE_URI = "";
 
+    // PAGE TO DIRECT TO : page.tsx
+    // PAGE TO START WITH : tempsignin.html
     public static void main(String[] args) throws Exception {
         //STEP 1: Create Components
-        HttpServer s = HttpServer.create(new InetSocketAddress(5173), 0);
+        HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
         s.createContext("/", new StaticHandler());
         s.createContext("/auth/google", new AuthHandler());
 
         //STEP 2: Get Server Running
         s.setExecutor(null);
         s.start();
-        System.out.println("SERVER RUNNING ON: PORT 5173");
+        System.out.println("SERVER RUNNING ON: PORT 5500");
     }
 
     static class StaticHandler implements HttpHandler {
