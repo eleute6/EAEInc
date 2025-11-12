@@ -1,3 +1,4 @@
+package app;
 /* IMPORTS */
 // SERVER LOGIC //
 import com.sun.net.httpserver.HttpServer;

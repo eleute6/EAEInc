@@ -1,3 +1,4 @@
+package app;
 /* TOOLS FOR SERVERSIDE *
  * A comprehensive set of tools for readability and
  * managing server side processes. All processes are
