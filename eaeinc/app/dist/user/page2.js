@@ -1285,14 +1285,28 @@
   var import_jsx_runtime = __toESM(require_jsx_runtime());
   function Page() {
     const [user, setUser] = (0, import_react.useState)(null);
+    const [loading, setLoading] = (0, import_react.useState)(true);
     (0, import_react.useEffect)(() => {
-      console.log("Loading user info from localStorage");
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      if (typeof window !== "undefined") {
+        console.log("Loading user info from localStorage");
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch (err) {
+            console.error("Failed to parse user info:", err);
+            localStorage.removeItem("user");
+          }
+        }
+        setLoading(false);
       }
     }, []);
-    if (!user) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Loading..." });
+    if (loading) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { className: "flex items-center justify-center h-screen bg-gray-100", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-gray-600 text-lg", children: "Loading user info..." }) });
+    }
+    if (!user) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { className: "flex items-center justify-center h-screen bg-gray-100", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-red-600 text-lg", children: "No user info found. Please log in again." }) });
+    }
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { className: "flex items-center justify-center h-screen bg-gray-100", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-white rounded-2xl shadow-lg p-8 text-center max-w-sm w-full", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         "img",
