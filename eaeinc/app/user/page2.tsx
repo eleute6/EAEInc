@@ -10,18 +10,42 @@ interface User {
 
 export default function Page() {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true); // Track loading state
 
   useEffect(() => {
-    // Load user info from localStorage
-    console.log("Loading user info from localStorage");
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) { //If the user's stored, get the information.
-      setUser(JSON.parse(storedUser));
+    // Only run in the browser
+    if (typeof window !== "undefined") {
+      console.log("Loading user info from localStorage");
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (err) {
+          console.error("Failed to parse user info:", err);
+          localStorage.removeItem("user");
+        }
+      }
+      setLoading(false);
     }
   }, []);
 
-  //If the user isn't in existence yet, wait.
-  if (!user) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <main className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-gray-600 text-lg">Loading user info...</div>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-red-600 text-lg">
+          No user info found. Please log in again.
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex items-center justify-center h-screen bg-gray-100">
