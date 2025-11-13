@@ -44,14 +44,14 @@ public class ServerHosting {
 
     public static void main(String[] args) throws Exception {
         //STEP 1: Create Components
-        HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
+        HttpServer s = HttpServer.create(new InetSocketAddress(3000), 0);
         s.createContext("/", new StaticHandler());
         s.createContext("/api/auth/login", new AuthHandler());
 
         //STEP 2: Get Server Running
         s.setExecutor(null);
         s.start();
-        System.out.println("SERVER RUNNING ON: PORT 5500");
+        System.out.println("SERVER RUNNING ON: PORT 3000");
         System.out.println("Serving files from: " + DIR);
     }
 
