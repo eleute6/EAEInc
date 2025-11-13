@@ -26,15 +26,21 @@ function PostForum() {
   const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePostAction = (formData: FormData) => {
-    const text = (formData.get("postInput") as string)?.trim();
-    if (!text) return alert("Post input required");
-
-    const newPost: Post = { id: Date.now(), text, image: preview, user };
-    setPosts((prev) => [...prev, newPost]); // Append to the end
-
+    const formDataCopy = formData;
     ref.current?.reset();
+
+    const text = formDataCopy.get("postInput") as string;
+
+    if (!text.trim()) {
+      throw new Error("You must provide a post input");
+    }
     setPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    try {
+      await createPostAction(formDataCopy);
+    } catch (error) {
+      console.log("Error creating a post");
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,9 +68,11 @@ function PostForum() {
       <div className="bg-white p-4 rounded-lg shadow-md flex-shrink-0 mb-4">
         <form
           ref={ref}
-          onSubmit={(e) => {
-            e.preventDefault();
-            handlePostAction(new FormData(ref.current!));
+          action={(formData) => {
+            //Handle form submission
+            handlePostAction(formData);
+
+            //Toast notifications
           }}
           className="flex flex-col space-y-3"
         >
@@ -129,43 +137,8 @@ function PostForum() {
           </div>
         </form>
       </div>
-
+      <hr className="mt-2 border-gray-300" />
       {/* Scrollable Posts Section */}
-      <div className="flex-1 overflow-y-auto scrollbar-none px-2">
-        <div className="flex flex-col space-y-4">
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-white p-4 rounded-lg shadow-sm border"
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <Avatar className="w-10 h-10">
-                  {post.user.imageUrl ? (
-                    <AvatarImage src={post.user.imageUrl} />
-                  ) : (
-                    <AvatarFallback className="flex items-center justify-center bg-blue-500 text-white font-bold w-full h-full rounded-full">
-                      {post.user.firstName.charAt(0)}
-                      {post.user.lastName.charAt(0)}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <p className="font-semibold">
-                  {post.user.firstName} {post.user.lastName}
-                </p>
-              </div>
-              <p className="text-gray-800 mb-2">{post.text}</p>
-              {post.image && (
-                <img
-                  src={post.image}
-                  alt="Post image"
-                  className="w-full max-h-64 object-cover rounded-lg"
-                />
-              )}
-            </div>
-          ))}
-          <div ref={postsEndRef} />
-        </div>
-      </div>
     </div>
   );
 }
