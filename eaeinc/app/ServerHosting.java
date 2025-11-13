@@ -38,7 +38,7 @@ public class ServerHosting {
     private static final String DIR = System.getProperty("user.dir");
     private static final Gson gson = new Gson();
     private static final String CLIENT_ID = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com";
-    private static final String DATABASE_URI = "";
+    private static final String DATABASE_URI = ""; //TO-DO
 
     // PAGE TO DIRECT TO : page.tsx
     // PAGE TO START WITH : tempsignin.html
@@ -100,20 +100,20 @@ public class ServerHosting {
 
             // STEP 2: Read Message Information
             String body = new BufferedReader(new InputStreamReader(exchange.getRequestBody())).lines().collect(Collectors.joining("\n"));
-            JsonObject requestJson = gson.fromJson(body, JsonObject.class);
-            String idTokenString = requestJson.get("id_token").getAsString();
-            JsonObject responseJson = new JsonObject();
+            JsonObject request = gson.fromJson(body, JsonObject.class);
+            String tokenString = request.get("id_token").getAsString();
+            JsonObject response = new JsonObject();
 
             // STEP 3: Construct Token
             try {
                 // STEP 3.1: Verify Token
-                GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-                    GsonFactory.getDefaultInstance()).setAudience(Collections.singletonList(CLIENT_ID)).build();
+                GoogleIdTokenVerifier vrf = new GoogleIdTokenVerifier.Builder(GoogleNetHttpTransport.newTrustedTransport(),
+                GsonFactory.getDefaultInstance()).setAudience(Collections.singletonList(CLIENT_ID)).build();
 
-                GoogleIdToken idToken = verifier.verify(idTokenString);
-                if (idToken != null) {
+                GoogleIdToken token = vrf.verify(tokenString);
+                if (token != null) {
                     // STEP 3.2: Retrieve Token Information
-                    GoogleIdToken.Payload payload = idToken.getPayload();
+                    GoogleIdToken.Payload payload = token.getPayload();
 
                     // STEP 3.3: Pull Out Token Information
                     String email = payload.getEmail();
@@ -124,32 +124,27 @@ public class ServerHosting {
                     updateUser(name, email, picture);
 
                     //STEP 3.5: Collect JSON Response Materials - WILL BE ENCRYPTED IN PRODUCTION
-                    responseJson.addProperty("status", "valid");
-                    responseJson.addProperty("name", name);
-                    responseJson.addProperty("email", email);
-                    responseJson.addProperty("picture", picture);
-
-                    //STEP 4 : Redirect by HTTP to Other Page
-                    exchange.getResponseHeaders().add("Location", "/user/page.tsx");
-                    exchange.sendResponseHeaders(302, -1);
-                    exchange.close();
+                    response.addProperty("status", "valid");
+                    response.addProperty("name", name);
+                    response.addProperty("email", email);
+                    response.addProperty("picture", picture);
                     return;
                 } else { //If the user is invalid, will redirect to ERROR_PAGE
-                    responseJson.addProperty("status", "invalid");
+                    response.addProperty("status", "invalid");
                 }
-            } catch (Exception e) { //Catches Errors
+            } catch (Exception e) { //Catches Errors & Preps Message
                 e.printStackTrace();
-                responseJson.addProperty("status", "error");
-                responseJson.addProperty("message", e.getMessage());
+                response.addProperty("status", "error");
+                response.addProperty("message", e.getMessage());
             }
 
             // STEP 4: Send Response
-            byte[] respBytes = gson.toJson(responseJson).getBytes(StandardCharsets.UTF_8);
+            byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, respBytes.length);
-            OutputStream os = exchange.getResponseBody();
+            try (OutputStream os = exchange.getResponseBody()) {
             os.write(respBytes);
-            os.close();
+        }
         }
     }
 

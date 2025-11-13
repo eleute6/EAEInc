@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 
-export default function Home() {
+export default function Home2() {
   const [loading, setLoading] = useState(false);
 
+  
   const handleLogin = async () => {
     setLoading(true);
     try {

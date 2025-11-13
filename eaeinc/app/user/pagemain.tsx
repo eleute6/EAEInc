@@ -1,15 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Home from "./page2";
+import Page from "./page2";
 
 const rootElement = document.getElementById("root");
 
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <Home />
+      <Page />
     </React.StrictMode>
   );
-} else {
-  console.error("ERROR: ROOT NOT FOUND");
 }
