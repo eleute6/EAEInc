@@ -1286,6 +1286,7 @@
   function Page() {
     const [user, setUser] = (0, import_react.useState)(null);
     (0, import_react.useEffect)(() => {
+      console.log("Loading user info from localStorage");
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         setUser(JSON.parse(storedUser));

@@ -21749,7 +21749,7 @@
       fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id_token: idToken }) }).then((res) => res.json()).then((data) => {
         console.log("Server response:", data);
         if (data.status === "valid") {
-          window.location.href = "/eaeinc/app/dash.html";
+          window.location.href = "eaeinc/app/dash.html";
         } else {
           alert("LOGIN FAILED: " + JSON.stringify(data));
         }

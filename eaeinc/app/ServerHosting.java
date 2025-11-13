@@ -40,8 +40,8 @@ public class ServerHosting {
     private static final String CLIENT_ID = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com";
     private static final String DATABASE_URI = ""; //TO-DO
 
-    // PAGE TO DIRECT TO : page.tsx
-    // PAGE TO START WITH : tempsignin.html
+    //PAGE TO START WITH: index.html -> main.tsx -> React Routing
+
     public static void main(String[] args) throws Exception {
         //STEP 1: Create Components
         HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
@@ -98,6 +98,10 @@ public class ServerHosting {
                 return;
             }
 
+            //TESTING
+            System.out.println("RECEIVED AUTH REQUEST");
+            //
+
             // STEP 2: Read Message Information
             String body = new BufferedReader(new InputStreamReader(exchange.getRequestBody())).lines().collect(Collectors.joining("\n"));
             JsonObject request = gson.fromJson(body, JsonObject.class);
@@ -128,7 +132,6 @@ public class ServerHosting {
                     response.addProperty("name", name);
                     response.addProperty("email", email);
                     response.addProperty("picture", picture);
-                    return;
                 } else { //If the user is invalid, will redirect to ERROR_PAGE
                     response.addProperty("status", "invalid");
                 }
@@ -144,6 +147,7 @@ public class ServerHosting {
             exchange.sendResponseHeaders(200, respBytes.length);
             try (OutputStream os = exchange.getResponseBody()) {
             os.write(respBytes);
+            System.out.println("SENT AUTH RESPONSE");
         }
         }
     }

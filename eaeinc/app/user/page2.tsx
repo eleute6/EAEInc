@@ -13,6 +13,7 @@ export default function Page() {
 
   useEffect(() => {
     // Load user info from localStorage
+    console.log("Loading user info from localStorage");
     const storedUser = localStorage.getItem("user");
     if (storedUser) { //If the user's stored, get the information.
       setUser(JSON.parse(storedUser));

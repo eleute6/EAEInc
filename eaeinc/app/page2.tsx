@@ -39,7 +39,7 @@ export default function Home() {
         console.log("Server response:", data);
         //STEP 3 : REDIRECT USER
         if (data.status === "valid") {
-          window.location.href = "/eaeinc/app/dash.html";
+          window.location.href = "eaeinc/app/dash.html";
         } else {
           alert("LOGIN FAILED: " + JSON.stringify(data));
         }
