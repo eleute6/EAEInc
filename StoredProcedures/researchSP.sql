@@ -16,11 +16,11 @@ begin
     insert into Forum (title, body, emailID, searchTag)
     values (pTitle, pBody, pEmailID, pSearchTag);
 
-    set v_forumID = LAST_INSERT_ID();
+    set v_forumID = last_insert_id();
 
     update UserInfo
     set currentContributionScore = currentContributionScore + 3,
-        highestContributionScore = GREATEST(highestContributionScore, currentContributionScore + 5)
+        highestContributionScore = greatest(highestContributionScore, currentContributionScore + 5)
     where emailID = pEmailID;
   commit;
 
