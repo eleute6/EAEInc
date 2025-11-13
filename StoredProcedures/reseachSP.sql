@@ -19,7 +19,7 @@ begin
     set v_forumID = LAST_INSERT_ID();
 
     update UserInfo
-    set currentContributionScore = currentContributionScore + 5,
+    set currentContributionScore = currentContributionScore + 3,
         highestContributionScore = GREATEST(highestContributionScore, currentContributionScore + 5)
     where emailID = pEmailID;
   commit;
