@@ -46,7 +46,7 @@ public class ServerHosting {
         //STEP 1: Create Components
         HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
         s.createContext("/", new StaticHandler());
-        s.createContext("/auth/google", new AuthHandler());
+        s.createContext("/api/auth/login", new AuthHandler());
 
         //STEP 2: Get Server Running
         s.setExecutor(null);

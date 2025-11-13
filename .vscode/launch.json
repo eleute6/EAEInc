@@ -13,7 +13,7 @@
             "request": "launch",
             "mainClass": "ServerHosting",
             "projectName": "EAEInc_234df591",
-            "cwd": "C:/Users/ayden/EAEInc/eaeinc/app"
+            "cwd": "C:/Users/ayden/EAEInc/eaeinc/app" //NOTE: NEEDS TO BE CHANGED LATER
         },
         {
             "name": "Containers: Node.js Launch",
