@@ -37,12 +37,23 @@ public class ServerHosting {
     private static final String DIR = System.getProperty("user.dir");
     private static final Gson gson = new Gson();
     private static final String CLIENT_ID = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com";
-    private static final String DATABASE_URI = "jdbc:mysql://localhost:3306/ResearchPageDB?user=backend_user&password=your_password";
-
+    private static final String DB_USER = "backend_user";
+    private static final String DB_PASSWORD = "eaeincdb";
+    private static final String DATABASE_URI = "jdbc:mysql://localhost:3306/ResearchPageDB";
     //PAGE TO START WITH: index.html -> main.tsx -> React Routing
 
 
     public static void main(String[] args) throws Exception {
+
+         try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                System.out.println("MySQL driver loaded successfully.");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                System.err.println("MySQL JDBC driver not found!");
+                return; // stop if driver can't be loaded
+            }
+
         //STEP 1: Create Components
         HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
         s.createContext("/", new StaticHandler());
@@ -53,6 +64,7 @@ public class ServerHosting {
         s.start();
         System.out.println("SERVER RUNNING ON: PORT 5500");
         System.out.println("Serving files from: " + DIR);
+
     }
 
     static class StaticHandler implements HttpHandler {
@@ -165,26 +177,22 @@ public class ServerHosting {
     }
 
     private static void updateUser(String name, String email, String pictureLink) {
-        // Optional: if you want to store the picture, you can add a column pictureURL to UserInfo
-        // ALTER TABLE UserInfo ADD COLUMN pictureURL varchar(500);
+        String sql = "INSERT INTO UserInfo (emailID, userName, pictureURL) VALUES (?, ?, ?) " +
+                    "ON DUPLICATE KEY UPDATE userName = VALUES(userName), pictureURL = VALUES(pictureURL)";
 
-        String sql = "INSERT INTO UserInfo (emailID, userName) VALUES (?, ?) " +
-                    "ON DUPLICATE KEY UPDATE userName = VALUES(userName)";
-
-        try (Connection conn = DriverManager.getConnection(DATABASE_URI);
+        try (Connection conn = DriverManager.getConnection(DATABASE_URI, DB_USER, DB_PASSWORD);
             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email);
             stmt.setString(2, name);
-            // If you added pictureURL column:
-            // stmt.setString(3, pictureLink);
+            stmt.setString(3, pictureLink);
 
             int rows = stmt.executeUpdate();
-            System.out.println("User updated/inserted successfully, rows affected: " + rows);
+            System.out.println("TEST: User updated/inserted successfully, rows affected: " + rows);
 
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Database error: " + e.getMessage());
+            System.err.println("TEST: Database error: " + e.getMessage());
         }
     }
 }
