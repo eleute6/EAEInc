@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import UserInformation from "./UserInformation";
 import PostForum from "./PostForum";
 import HelpfulResources from "./HelpfulResources";
+import ContributionLeaderboard from "./ContributionLeaderboard";
 
 interface User {
   name: string;
@@ -24,6 +25,7 @@ export default function UserPage({ user }: Props) {
         {/* Left sidebar: user info */}
         <section className="hidden md:flex md:flex-col md:col-span-2 space-y-8">
           <UserInformation user={user} />
+          <ContributionLeaderboard />
         </section>
 
         {/* Center: main post forum */}
