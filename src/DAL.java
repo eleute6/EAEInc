@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.Scanner;
+import java.io.Console;
 
 public class DAL {
     
@@ -44,17 +45,32 @@ public class DAL {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         DAL dal = new DAL();
+        Console console = System.console();
+
+        if (console == null) {
+            System.out.println("No console available");
+        }
 
         String databaseName = "researchDB";
 
         System.out.print("Enter MySQL username: ");
         String user = scanner.nextLine();
 
-        System.out.print("Enter MySQL password: ");
-        String password = scanner.nextLine();   // visible on screen for now, consider hiding input at a later time
+        String password;
+
+        if (console != null) {
+            char[] passwordChars = console.readPassword("Enter MySQL password: ");
+            password = new String(passwordChars);
+        } else {
+            // Fallback if console is not available
+            System.out.print("Enter MySQL password (visible): ");
+            java.util.Scanner sc = new java.util.Scanner(System.in);
+            password = sc.nextLine();
+            sc.close();
+        }
 
 
-        // test query to print current timestamp to ensure connection works
+        // Test query to print current timestamp to ensure connection works
         String query = "SELECT NOW()";
 
         boolean success = dal.TryExecutingAQuery(databaseName, query, user, password);
