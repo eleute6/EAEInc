@@ -1,19 +1,22 @@
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import React from "react";
 
-// WILL EVENTUALLY NEED TO HAVE ASYNC BEFORE IT
-function UserInformation() {
-  //const user = await currentUser();
-  // Dummy user data for now
-  const user = {
-    firstName: "Alice",
-    lastName: "Brown",
-    imageUrl: "",
-  };
+interface User {
+  name: string;
+  email: string;
+  picture: string;
+}
 
-  const firstName = user.firstName;
-  const lastName = user.lastName;
-  const imageUrl = user.imageUrl;
+interface Props {
+  user: User;
+}
+
+export default function UserInformation({ user }: Props) {
+  // Split full name into first and last
+  const [firstName, ...rest] = user.name.split(" ");
+  const lastName = rest.join(" ");
+
+  const imageUrl = user.picture;
 
   return (
     <div className="flex flex-col justify-center items-center bg-white mr-6 rounded-lg border py-4 px-6 space-y-2">
@@ -28,15 +31,12 @@ function UserInformation() {
         )}
       </Avatar>
 
-      {/* Dummy user info */}
       <div className="text-center">
         <p className="font-semibold">
           {firstName} {lastName}
         </p>
-        <p className="text-sm text-gray-500">Faculty</p>
+        <p className="text-sm text-gray-500">{user.email}</p>
       </div>
     </div>
   );
 }
-
-export default UserInformation;

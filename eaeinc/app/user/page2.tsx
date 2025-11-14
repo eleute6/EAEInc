@@ -11,17 +11,37 @@ interface User {
 export default function Page() {
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    // Load user info from localStorage
-    console.log("Loading user info from localStorage");
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) { //If the user's stored, get the information.
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  // Get email from query string
+  const email = new URLSearchParams(window.location.search).get("email");
 
-  //If the user isn't in existence yet, wait.
-  if (!user) return <div>Loading...</div>;
+  useEffect(() => {
+    if (!email) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5500/api/user?email=${encodeURIComponent(email)}`
+        );
+        const data = await res.json();
+
+        if (data.status === "valid") {
+          setUser({
+            name: data.name,
+            email: data.email,
+            picture: data.picture,
+          });
+        } else {
+          console.error("User not found or invalid status", data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user info", err);
+      }
+    };
+
+    fetchUser();
+  }, [email]);
+
+  if (!user) return <div>Loading user info...</div>;
 
   return (
     <main className="flex items-center justify-center h-screen bg-gray-100">

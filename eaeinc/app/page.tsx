@@ -1,12 +1,83 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import UserPage from "@/components/UserPage"; // make sure the path is correct
+
+interface User {
+  name: string;
+  email: string;
+  picture: string;
+}
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 export default function Home2() {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Decode JWT to extract payload
+  function decodeJWT(token: string) {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  }
+
+  const handleCredentialResponse = async (response: any) => {
+    setLoading(true);
+
+    try {
+      const id_token = response.credential;
+      const payload = decodeJWT(id_token);
+      const email = payload.email;
+
+      // STEP 1: Send ID token to backend to insert/update database
+      const authRes = await fetch("http://localhost:5500/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token }),
+      });
+      const authData = await authRes.json();
+
+      if (authData.status !== "valid") {
+        alert("Login failed!");
+        setLoading(false);
+        return;
+      }
+
+      // STEP 2: Fetch user data from backend
+      const userRes = await fetch(
+        `http://localhost:5500/api/user?email=${encodeURIComponent(email)}`
+      );
+      const userData = await userRes.json();
+
+      if (userData.status === "valid") {
+        setUser({
+          name: userData.name,
+          email: userData.email,
+          picture: userData.picture,
+        });
+      } else {
+        alert("Could not load user data from database");
+      }
+    } catch (err) {
+      console.error("Error during login/fetch:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load Google Sign-In button
   useEffect(() => {
-    /* Load Google Sign-In */
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
@@ -24,35 +95,12 @@ export default function Home2() {
     document.body.appendChild(script);
   }, []);
 
-  function tRetrieve(token: string) {
-    let baseURL = token.split(".")[1];
-    let modURL = baseURL.replace(/-/g, "+").replace(/_/g, "/");
-    let json = decodeURIComponent(
-      atob(modURL)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
-    );
-    return JSON.parse(json);
-  }
+  if (loading) return <div>Loading...</div>;
 
-  const handleCredentialResponse = (response: any) => {
-    const id_token = response.credential;
-    const payload = tRetrieve(id_token);
+  // Render full UserPage layout after login
+  if (user) return <UserPage user={user} />;
 
-    fetch("http://localhost:5500/api/auth/google", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_token }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Server response:", data);
-        alert("Server response: " + JSON.stringify(data));
-      })
-      .catch((err) => console.error("Error sending token:", err));
-  };
-
+  // Show login page if not logged in
   return (
     <main className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-sm w-full">

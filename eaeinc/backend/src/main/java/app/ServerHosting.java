@@ -58,6 +58,7 @@ public class ServerHosting {
         HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
         s.createContext("/", new StaticHandler());
         s.createContext("/api/auth/google", new AuthHandler());
+        s.createContext("/api/user", new UserHandler());
 
         //STEP 2: Get Server Running
         s.setExecutor(null);
@@ -193,6 +194,69 @@ public class ServerHosting {
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("TEST: Database error: " + e.getMessage());
+        }
+    }
+
+    static class UserHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                exchange.sendResponseHeaders(204, -1); // No content
+                return;
+            }
+
+            JsonObject response = new JsonObject();
+            if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            try {
+                String query = exchange.getRequestURI().getQuery(); // e.g., ?email=...
+                String email = null;
+                if (query != null && query.startsWith("email=")) {
+                    email = java.net.URLDecoder.decode(query.substring(6), StandardCharsets.UTF_8);
+                }
+                if (email == null || email.isEmpty()) {
+                    response.addProperty("status", "invalid");
+                    byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
+                    exchange.sendResponseHeaders(400, respBytes.length);
+                    try (OutputStream os = exchange.getResponseBody()) {
+                        os.write(respBytes);
+                    }
+                    return;
+                }
+                String sql = "SELECT userName, emailID, pictureURL FROM UserInfo WHERE emailID = ?";
+                try (Connection conn = DriverManager.getConnection(DATABASE_URI, DB_USER, DB_PASSWORD);
+                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                    stmt.setString(1, email);
+                    ResultSet rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        response.addProperty("name", rs.getString("userName"));
+                        response.addProperty("email", rs.getString("emailID"));
+                        response.addProperty("picture", rs.getString("pictureURL"));
+                        response.addProperty("status", "valid");
+                    } else {
+                        response.addProperty("status", "invalid");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.addProperty("status", "error");
+                response.addProperty("message", e.getMessage());
+            }
+
+            byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, respBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(respBytes);
+            }
         }
     }
 }

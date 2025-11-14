@@ -1,13 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Home from "./page2";
+import Home2 from "./page";
 
 const rootElement = document.getElementById("root");
 
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <Home />
+      <Home2 />
     </React.StrictMode>
   );
 } else {
