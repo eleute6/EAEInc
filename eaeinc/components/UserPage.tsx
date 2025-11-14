@@ -22,7 +22,7 @@ export default function UserPage({ user }: Props) {
 
       {/* Main content with spacing below header */}
       <main className="mt-[120px] grid grid-cols-8 sm:px-5 gap-6">
-        {/* Left sidebar: user info */}
+        {/* Left sidebar: user info + leaderboard */}
         <section className="hidden md:flex md:flex-col md:col-span-2 space-y-8">
           <UserInformation user={user} />
           <ContributionLeaderboard />
@@ -36,7 +36,7 @@ export default function UserPage({ user }: Props) {
         {/* Right sidebar: helpful resources */}
         <section className="hidden lg:flex lg:flex-col lg:col-span-2 space-y-8">
           <HelpfulResources />
-          {/* You can add other widgets here, e.g., UpcomingEvents */}
+          {/* Optional: other widgets */}
         </section>
       </main>
     </>
