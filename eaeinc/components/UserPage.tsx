@@ -3,6 +3,7 @@ import UserInformation from "./UserInformation";
 import PostForum from "./PostForum";
 import HelpfulResources from "./HelpfulResources";
 import ContributionLeaderboard from "./ContributionLeaderboard";
+import UpcomingEvents from "./UpcomingEvents";
 
 interface User {
   name: string;
@@ -36,7 +37,7 @@ export default function UserPage({ user }: Props) {
         {/* Right sidebar: helpful resources */}
         <section className="hidden lg:flex lg:flex-col lg:col-span-2 space-y-8">
           <HelpfulResources />
-          {/* Optional: other widgets */}
+          <UpcomingEvents />
         </section>
       </main>
     </>
