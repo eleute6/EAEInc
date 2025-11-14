@@ -3,6 +3,8 @@ import java.util.Scanner;
 
 public class DAL {
     
+
+    // Establishes a connection to the MySQL database
     private Connection getMySQLConnection(String databaseName, String user, String password) {
         try {
             return DriverManager.getConnection("jdbc:mysql://localhost:3306/" + databaseName, user, password);
@@ -11,7 +13,10 @@ public class DAL {
             return null;
         }
     }
-
+    // Executes an SQL query 
+    // Prints results to console
+    // Takes in database name (researchDB), query, user, password
+    // returns true if successful, false otherwise
     public boolean TryExecutingAQuery (String databaseName, String query, String user, String password) {
         try {
             Connection connection = getMySQLConnection(databaseName, user, password);
@@ -35,7 +40,7 @@ public class DAL {
             return false;
         }
     }
-
+    // Main method to test DAL functionality
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         DAL dal = new DAL();
