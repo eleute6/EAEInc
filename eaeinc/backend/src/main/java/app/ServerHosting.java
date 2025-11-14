@@ -92,6 +92,17 @@ public class ServerHosting {
 
     static class AuthHandler implements HttpHandler {
         public void handle(HttpExchange exchange) throws IOException {
+
+            //CORS headers
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                exchange.sendResponseHeaders(204, -1); // No content
+                return;
+            }
+
             // STEP 1: Check that Request is Post
             if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
                 exchange.sendResponseHeaders(405, -1);
@@ -141,14 +152,6 @@ public class ServerHosting {
                 response.addProperty("message", e.getMessage());
             }
 
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
-
-            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-                exchange.sendResponseHeaders(204, -1); // No content
-                return;
-            }
 
             // STEP 4: Send Response
             byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
