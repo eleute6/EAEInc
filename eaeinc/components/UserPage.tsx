@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import UserInformation from "./UserInformation";
 import PostForum from "./PostForum";
+import HelpfulResources from "./HelpfulResources";
 
 interface User {
   name: string;
@@ -15,23 +16,26 @@ interface Props {
 export default function UserPage({ user }: Props) {
   return (
     <>
-      {/* Header at the very top */}
+      {/* Header at the top */}
       <Header user={user} />
 
-      {/* Main content with spacing to avoid overlapping header */}
+      {/* Main content with spacing below header */}
       <main className="mt-[120px] grid grid-cols-8 sm:px-5 gap-6">
-        {/* Sidebar / User Info */}
-        <section className="hidden md:inline md:col-span-2">
+        {/* Left sidebar: user info */}
+        <section className="hidden md:flex md:flex-col md:col-span-2 space-y-8">
           <UserInformation user={user} />
         </section>
 
-        {/* Forum / Posts */}
+        {/* Center: main post forum */}
         <section className="col-span-8 md:col-span-6">
           <PostForum user={user} />
         </section>
 
-        {/* Optional Widget */}
-        <section>{/* Widget */}</section>
+        {/* Right sidebar: helpful resources */}
+        <section className="hidden lg:flex lg:flex-col lg:col-span-2 space-y-8">
+          <HelpfulResources />
+          {/* You can add other widgets here, e.g., UpcomingEvents */}
+        </section>
       </main>
     </>
   );
