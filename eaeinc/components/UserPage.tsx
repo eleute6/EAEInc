@@ -27,7 +27,7 @@ export default function UserPage({ user }: Props) {
         </section>
 
         {/* Center: main post forum */}
-        <section className="col-span-8 md:col-span-6">
+        <section className="col-span-full md:col-span-4 xl:max-w-xl mx-auto w-full h-[calc(100vh-100px)] overflow-hidden">
           <PostForum user={user} />
         </section>
 
