@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
 // GOOGLE OAUTH //
-import com.google.api.client.auth.*;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -38,15 +37,16 @@ public class ServerHosting {
     private static final String DIR = System.getProperty("user.dir");
     private static final Gson gson = new Gson();
     private static final String CLIENT_ID = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com";
-    private static final String DATABASE_URI = ""; //TO-DO
+    private static final String DATABASE_URI = "jdbc:mysql://localhost:3306/ResearchPageDB?user=backend_user&password=your_password";
 
     //PAGE TO START WITH: index.html -> main.tsx -> React Routing
+
 
     public static void main(String[] args) throws Exception {
         //STEP 1: Create Components
         HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
         s.createContext("/", new StaticHandler());
-        s.createContext("/api/auth/login", new AuthHandler());
+        s.createContext("/api/auth/google", new AuthHandler());
 
         //STEP 2: Get Server Running
         s.setExecutor(null);
@@ -141,6 +141,15 @@ public class ServerHosting {
                 response.addProperty("message", e.getMessage());
             }
 
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                exchange.sendResponseHeaders(204, -1); // No content
+                return;
+            }
+
             // STEP 4: Send Response
             byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
@@ -153,7 +162,26 @@ public class ServerHosting {
     }
 
     private static void updateUser(String name, String email, String pictureLink) {
-        //TO-DO : Database Linking
-    }
+        // Optional: if you want to store the picture, you can add a column pictureURL to UserInfo
+        // ALTER TABLE UserInfo ADD COLUMN pictureURL varchar(500);
 
+        String sql = "INSERT INTO UserInfo (emailID, userName) VALUES (?, ?) " +
+                    "ON DUPLICATE KEY UPDATE userName = VALUES(userName)";
+
+        try (Connection conn = DriverManager.getConnection(DATABASE_URI);
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            stmt.setString(2, name);
+            // If you added pictureURL column:
+            // stmt.setString(3, pictureLink);
+
+            int rows = stmt.executeUpdate();
+            System.out.println("User updated/inserted successfully, rows affected: " + rows);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Database error: " + e.getMessage());
+        }
+    }
 }

@@ -1,47 +1,55 @@
-<html lang = "en">
-    <head>
-        <script src = "https://accounts.google.com/gsi/client" async> </script> <!-- IMPORT GOOGLE LIBRARY FOR USER FUNCTIONS -->
-        <script> 
-            //FUNCTION FOR TOKEN RETRIEVAL
-            function tRetrieve(token) {
-                let baseURL = token.split(".")[1]; //Retrieve URL from returned data token
-                let modURL = baseURL.replace(/-/g, "+").replace(/_/g, "/"); //Fix the URL
-                //Below: Retrieve the JSON parsing of info for us to read later for profile making.
-                let json = decodeURIComponent(atob(modURL).split("").map(function(c) { return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)}).join(""));
-                return JSON.parse(json);
-            }
-
-            //FUNCTION FOR INFORMATION RETRIEVAL
-            function iRetrieve(response) {
-                const id_token = response.credential; 
-                const payload = tRetrieve(id_token);
-
-                fetch("http://localhost:5500/api/auth/google", {
-                    method: "POST",
-                    headers: {
-                    "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ id_token: id_token })
+<html lang="en">
+  <head>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <!-- IMPORT GOOGLE LIBRARY FOR USER FUNCTIONS -->
+    <script>
+      //FUNCTION FOR TOKEN RETRIEVAL
+      function tRetrieve(token) {
+        let baseURL = token.split(".")[1]; //Retrieve URL from returned data token
+        let modURL = baseURL.replace(/-/g, "+").replace(/_/g, "/"); //Fix the URL
+        //Below: Retrieve the JSON parsing of info for us to read later for profile making.
+        let json = decodeURIComponent(
+          atob(modURL)
+            .split("")
+            .map(function (c) {
+              return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
             })
-            .then(res => res.json())
-            .then(data => {
-                console.log("Server response:", data);
-                alert("Server response: " + JSON.stringify(data));
-            })
-            .catch(err => console.error("Error sending token:", err));
-            }
-        </script>
-    </head>
-    <body>
-        <!-- ID: The Google ID Services Setting Preset -->
-        <!-- Data-Callback: The Method to Retrieve Data With -->
-        <!-- Client-ID: The Client ID for our Project - NEED TO PLACE INTO PROD ENVIRO -->
-        <div 
-        id = "g_id_onload" 
-        data-auto-prompt = "false"
-        data-callback = "iRetrieve"
-        data-client_id = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com"
-        ></div>
-        <div class="g_id_signin"></div>
-    </body>
+            .join("")
+        );
+        return JSON.parse(json);
+      }
+
+      //FUNCTION FOR INFORMATION RETRIEVAL
+      function iRetrieve(response) {
+        const id_token = response.credential;
+        const payload = tRetrieve(id_token);
+
+        fetch("http://localhost:5500/api/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id_token: id_token }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Server response:", data);
+            alert("Server response: " + JSON.stringify(data));
+          })
+          .catch((err) => console.error("Error sending token:", err));
+      }
+    </script>
+  </head>
+  <body>
+    <!-- ID: The Google ID Services Setting Preset -->
+    <!-- Data-Callback: The Method to Retrieve Data With -->
+    <!-- Client-ID: The Client ID for our Project - NEED TO PLACE INTO PROD ENVIRO -->
+    <div
+      id="g_id_onload"
+      data-auto-prompt="false"
+      data-callback="iRetrieve"
+      data-client_id="727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com"
+    ></div>
+    <div class="g_id_signin"></div>
+  </body>
 </html>

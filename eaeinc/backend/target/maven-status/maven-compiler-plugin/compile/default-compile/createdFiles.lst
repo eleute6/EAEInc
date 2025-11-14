@@ -1,0 +1,4 @@
+app\ServerHosting$StaticHandler.class
+app\ServerTools.class
+app\ServerHosting.class
+app\ServerHosting$AuthHandler.class
