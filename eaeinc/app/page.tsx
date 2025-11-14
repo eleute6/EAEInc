@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-export default function Home2() {
+export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
