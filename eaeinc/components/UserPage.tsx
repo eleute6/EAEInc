@@ -1,5 +1,6 @@
 import Header from "@/components/Header"; // adjust the path
 import UserInformation from "./UserInformation";
+import PostForum from "./PostForum";
 
 interface User {
   name: string;
@@ -22,9 +23,9 @@ export default function UserPage({ user }: Props) {
         <UserInformation user={user} />
       </section>
 
-      <section>
-        {/* PostForm */}
-        {/* PostFeed */}
+      {/* Main Content / Forum */}
+      <section className="col-span-8 md:col-span-6">
+        <PostForum user={user} />
       </section>
 
       <section>{/* Widget */}</section>
