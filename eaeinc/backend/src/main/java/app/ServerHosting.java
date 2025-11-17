@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
 // GOOGLE OAUTH //
-import com.google.api.client.auth.*;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -38,21 +37,35 @@ public class ServerHosting {
     private static final String DIR = System.getProperty("user.dir");
     private static final Gson gson = new Gson();
     private static final String CLIENT_ID = "727241440215-4r616p6l5ag90hglqrkft5m9b6gs2p4v.apps.googleusercontent.com";
-    private static final String DATABASE_URI = ""; //TO-DO
-
+    private static final String DB_USER = "backend_user";
+    private static final String DB_PASSWORD = "eaeincdb";
+    private static final String DATABASE_URI = "jdbc:mysql://localhost:3306/ResearchPageDB";
     //PAGE TO START WITH: index.html -> main.tsx -> React Routing
 
+
     public static void main(String[] args) throws Exception {
+
+         try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                System.out.println("MySQL driver loaded successfully.");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                System.err.println("MySQL JDBC driver not found!");
+                return; // stop if driver can't be loaded
+            }
+
         //STEP 1: Create Components
         HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
         s.createContext("/", new StaticHandler());
-        s.createContext("/api/auth/login", new AuthHandler());
+        s.createContext("/api/auth/google", new AuthHandler());
+        s.createContext("/api/user", new UserHandler());
 
         //STEP 2: Get Server Running
         s.setExecutor(null);
         s.start();
         System.out.println("SERVER RUNNING ON: PORT 5500");
         System.out.println("Serving files from: " + DIR);
+
     }
 
     static class StaticHandler implements HttpHandler {
@@ -92,6 +105,17 @@ public class ServerHosting {
 
     static class AuthHandler implements HttpHandler {
         public void handle(HttpExchange exchange) throws IOException {
+
+            //CORS headers
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                exchange.sendResponseHeaders(204, -1); // No content
+                return;
+            }
+
             // STEP 1: Check that Request is Post
             if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
                 exchange.sendResponseHeaders(405, -1);
@@ -141,6 +165,7 @@ public class ServerHosting {
                 response.addProperty("message", e.getMessage());
             }
 
+
             // STEP 4: Send Response
             byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
@@ -153,7 +178,85 @@ public class ServerHosting {
     }
 
     private static void updateUser(String name, String email, String pictureLink) {
-        //TO-DO : Database Linking
+        String sql = "INSERT INTO UserInfo (emailID, userName, pictureURL) VALUES (?, ?, ?) " +
+                    "ON DUPLICATE KEY UPDATE userName = VALUES(userName), pictureURL = VALUES(pictureURL)";
+
+        try (Connection conn = DriverManager.getConnection(DATABASE_URI, DB_USER, DB_PASSWORD);
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            stmt.setString(2, name);
+            stmt.setString(3, pictureLink);
+
+            int rows = stmt.executeUpdate();
+            System.out.println("TEST: User updated/inserted successfully, rows affected: " + rows);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("TEST: Database error: " + e.getMessage());
+        }
     }
 
+    static class UserHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                exchange.sendResponseHeaders(204, -1); // No content
+                return;
+            }
+
+            JsonObject response = new JsonObject();
+            if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            try {
+                String query = exchange.getRequestURI().getQuery(); // e.g., ?email=...
+                String email = null;
+                if (query != null && query.startsWith("email=")) {
+                    email = java.net.URLDecoder.decode(query.substring(6), StandardCharsets.UTF_8);
+                }
+                if (email == null || email.isEmpty()) {
+                    response.addProperty("status", "invalid");
+                    byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
+                    exchange.sendResponseHeaders(400, respBytes.length);
+                    try (OutputStream os = exchange.getResponseBody()) {
+                        os.write(respBytes);
+                    }
+                    return;
+                }
+                String sql = "SELECT userName, emailID, pictureURL FROM UserInfo WHERE emailID = ?";
+                try (Connection conn = DriverManager.getConnection(DATABASE_URI, DB_USER, DB_PASSWORD);
+                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                    stmt.setString(1, email);
+                    ResultSet rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        response.addProperty("name", rs.getString("userName"));
+                        response.addProperty("email", rs.getString("emailID"));
+                        response.addProperty("picture", rs.getString("pictureURL"));
+                        response.addProperty("status", "valid");
+                    } else {
+                        response.addProperty("status", "invalid");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.addProperty("status", "error");
+                response.addProperty("message", e.getMessage());
+            }
+
+            byte[] respBytes = gson.toJson(response).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, respBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(respBytes);
+            }
+        }
+    }
 }

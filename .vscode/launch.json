@@ -1,26 +1,41 @@
 {
-    "configurations": [
-        {
-            "type": "java",
-            "name": "ServerHosting",
-            "request": "launch",
-            "mainClass": "app.ServerHosting",
-            "projectName": "EAEInc_234df591"
-        },
-        {
-            "type": "java",
-            "name": "ServerHosting",
-            "request": "launch",
-            "mainClass": "ServerHosting",
-            "projectName": "EAEInc_234df591",
-            "cwd": "C:/Users/ayden/EAEInc/eaeinc/app" //NOTE: NEEDS TO BE CHANGED LATER
-        },
-        {
-            "name": "Containers: Node.js Launch",
-            "type": "docker",
-            "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "platform": "node"
-        }
-    ]
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ServerHosting",
+      "request": "launch",
+      "mainClass": "app.ServerHosting",
+      "projectName": "EAEInc_38179e77"
+    },
+    {
+      "type": "java",
+      "name": "ServerHosting",
+      "request": "launch",
+      "mainClass": "app.ServerHosting",
+      "projectName": "EAEInc_234df591"
+    },
+    {
+      "type": "java",
+      "name": "ServerHosting",
+      "request": "launch",
+      "mainClass": "ServerHosting",
+      "projectName": "EAEInc_234df591",
+      "cwd": "C:/Users/ayden/EAEInc/eaeinc/app"
+    },
+    {
+      "type": "java",
+      "name": "ServerHosting",
+      "request": "launch",
+      "mainClass": "ServerHosting",
+      "projectName": "EAEInc_234df591",
+      "cwd": "C:/Users/erinm/EAEInc/eaeinc/app"
+    },
+    {
+      "name": "Containers: Node.js Launch",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-run: debug",
+      "platform": "node"
+    }
+  ]
 }
