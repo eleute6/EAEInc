@@ -32,27 +32,68 @@ export default function PostForum({ user }: PostForumProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
 
-  // Split full name into first and last
   const firstName = user.name.split(" ")[0];
   const lastName = user.name.split(" ")[1] || "";
   const userObj = { firstName, lastName, imageUrl: user.picture };
 
-  const handlePostAction = (formData: FormData) => {
+  // Load posts from backend on load
+  useEffect(() => {
+    fetch("/api/posts") // <-- changed from localhost:5500
+      .then((res) => res.json())
+      .then((data) => setPosts(data))
+      .catch((err) => console.error("Failed to fetch posts:", err));
+  }, []);
+
+  const handlePostAction = async (formData: FormData) => {
     const text = (formData.get("postInput") as string)?.trim();
     if (!text) return alert("Post input required");
 
-    const newPost: Post = {
-      id: Date.now(),
+    // Optional image included
+    const body: {
+      text: string;
+      firstName: string;
+      lastName: string;
+      imageUrl: string;
+      image?: string; // <-- optional
+    } = {
       text,
-      image: preview,
-      user: userObj,
+      firstName: userObj.firstName,
+      lastName: userObj.lastName,
+      imageUrl: userObj.imageUrl,
     };
+
+    if (fileInputRef.current?.files?.[0]) {
+      const file = fileInputRef.current.files[0];
+      const base64 = await fileToBase64(file);
+      body.image = base64; // only added if image exists
+    }
+
+    const response = await fetch("/api/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      return alert("Failed to create post.");
+    }
+
+    const newPost = await response.json();
     setPosts((prev) => [...prev, newPost]);
 
     ref.current?.reset();
     setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  // Helper to convert file to base64
+  const fileToBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,7 +105,6 @@ export default function PostForum({ user }: PostForumProps) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Auto-scroll to the bottom when posts change
   useEffect(() => {
     if (posts.length === 0) return;
     const container = postsEndRef.current?.parentElement;
@@ -88,9 +128,9 @@ export default function PostForum({ user }: PostForumProps) {
               {userObj.imageUrl ? (
                 <AvatarImage src={userObj.imageUrl} />
               ) : (
-                <AvatarFallback className="flex items-center justify-center bg-blue-500 text-white font-bold w-full h-full rounded-full">
-                  {userObj.firstName.charAt(0)}
-                  {userObj.lastName.charAt(0)}
+                <AvatarFallback>
+                  {userObj.firstName[0]}
+                  {userObj.lastName[0]}
                 </AvatarFallback>
               )}
             </Avatar>
@@ -113,19 +153,15 @@ export default function PostForum({ user }: PostForumProps) {
           />
 
           {preview && (
-            <div className="mt-2">
-              <img
-                src={preview}
-                alt="Preview"
-                className="w-full max-h-64 object-cover rounded-lg"
-              />
-            </div>
+            <img
+              src={preview}
+              className="w-full max-h-64 object-cover rounded-lg"
+            />
           )}
 
           <div className="flex justify-end space-x-2">
             <Button type="button" onClick={() => fileInputRef.current?.click()}>
-              <ImageIcon className="mr-2" size={16} />
-              {preview ? "Change" : "Add"} image
+              <ImageIcon size={16} /> {preview ? "Change" : "Add"} image
             </Button>
 
             {preview && (
@@ -134,18 +170,16 @@ export default function PostForum({ user }: PostForumProps) {
                 type="button"
                 onClick={handleRemoveImage}
               >
-                <XIcon className="mr-2" size={16} /> Remove image
+                <XIcon size={16} /> Remove
               </Button>
             )}
 
-            <Button type="submit" className="ml-2">
-              Post
-            </Button>
+            <Button type="submit">Post</Button>
           </div>
         </form>
       </div>
 
-      {/* Scrollable Posts */}
+      {/* Posts */}
       <div className="flex-1 overflow-y-auto scrollbar-none px-2">
         <div className="flex flex-col space-y-4">
           {posts.map((post) => (
@@ -158,9 +192,9 @@ export default function PostForum({ user }: PostForumProps) {
                   {post.user.imageUrl ? (
                     <AvatarImage src={post.user.imageUrl} />
                   ) : (
-                    <AvatarFallback className="flex items-center justify-center bg-blue-500 text-white font-bold w-full h-full rounded-full">
-                      {post.user.firstName.charAt(0)}
-                      {post.user.lastName.charAt(0)}
+                    <AvatarFallback>
+                      {post.user.firstName[0]}
+                      {post.user.lastName[0]}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -169,16 +203,16 @@ export default function PostForum({ user }: PostForumProps) {
                 </p>
               </div>
               <p className="text-gray-800 mb-2">{post.text}</p>
+
               {post.image && (
                 <img
-                  src={post.image}
-                  alt="Post image"
+                  src={`http://localhost:5500/uploads/${post.image}`}
                   className="w-full max-h-64 object-cover rounded-lg"
                 />
               )}
             </div>
           ))}
-          <div ref={postsEndRef} />
+          <div ref={postsEndRef}></div>
         </div>
       </div>
     </div>

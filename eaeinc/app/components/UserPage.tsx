@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import Header from "@/app/components/Header";
 import UserInformation from "./UserInformation";
 import PostForum from "./PostForum";
 import HelpfulResources from "./HelpfulResources";

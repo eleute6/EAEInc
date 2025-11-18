@@ -2,6 +2,10 @@ package app;
 /* IMPORTS */
 // SERVER LOGIC //
 import com.sun.net.httpserver.HttpServer;
+
+import app.handlers.PostHandler;
+import app.services.PostService;
+
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -10,7 +14,6 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -18,7 +21,6 @@ import java.util.stream.Collectors;
 // GSON TOOLS //
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
 
 // GOOGLE OAUTH //
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -54,13 +56,19 @@ public class ServerHosting {
                 return; // stop if driver can't be loaded
             }
 
-        //STEP 1: Create Components
+        // STEP 1: Create Server
         HttpServer s = HttpServer.create(new InetSocketAddress(5500), 0);
-        s.createContext("/", new StaticHandler());
+
+        // STEP 2: Register your existing handlers
+        PostService postService = new PostService();
         s.createContext("/api/auth/google", new AuthHandler());
         s.createContext("/api/user", new UserHandler());
+        s.createContext("/api/posts", new PostHandler(postService)); 
 
-        //STEP 2: Get Server Running
+        s.createContext("/", new StaticHandler());
+
+
+        // STEP 4: Start server
         s.setExecutor(null);
         s.start();
         System.out.println("SERVER RUNNING ON: PORT 5500");

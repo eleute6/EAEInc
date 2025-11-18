@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import UserPage from "@/components/UserPage"; // make sure the path is correct
+import UserPage from "@/app/components/UserPage"; // make sure the path is correct
 
 interface User {
   name: string;

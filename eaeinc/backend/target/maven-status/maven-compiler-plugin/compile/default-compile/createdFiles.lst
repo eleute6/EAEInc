@@ -1,5 +1,10 @@
 app\ServerHosting$StaticHandler.class
+app\services\PostService.class
 app\ServerTools.class
+app\handlers\PostHandler$ErrorResponse.class
+app\handlers\PostHandler.class
+app\models\Post.class
+app\models\User.class
 app\ServerHosting$UserHandler.class
 app\ServerHosting.class
 app\ServerHosting$AuthHandler.class
