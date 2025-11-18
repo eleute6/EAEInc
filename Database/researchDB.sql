@@ -12,7 +12,8 @@ create table UserInfo (
     department varchar(100),
     currentContributionScore int default 0,
     highestContributionScore int default 0,
-    isAdmin boolean default 0
+    isAdmin boolean default 0,
+    pictureUrl varchar(500)
 );
 
 -- Instrument Table
