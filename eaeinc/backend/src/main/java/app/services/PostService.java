@@ -14,7 +14,9 @@ public class PostService {
 
     // Create a post linked to a user
     public Post createPost(String text, String image, User user) throws SQLException {
-        String sql = "INSERT INTO Posts (text, image, userFirstName, userLastName, userImageUrl) VALUES (?, ?, ?, ?, ?)";
+        
+        // LEAVING THIS HERE FOR NOW BUT NOT SURE IF THIS IS RIGHT FOR THE DATABASE
+        String sql = "INSERT INTO Forum (text, image, userFirstName, userLastName, userImageUrl) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(DATABASE_URI, DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
