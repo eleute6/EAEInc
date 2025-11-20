@@ -3,7 +3,7 @@ use ResearchPageDB;
 -- Procedure to create a forum comment
 drop procedure if exists AddForumComment;
 
-DELIMITER $$
+delimeter $$
 create procedure AddForumComment(
   in pForumID int,
   in pEmailID varchar(100),

@@ -3,7 +3,7 @@ use ResearchPageDB;
 -- Procedure to upload an instrument 
 drop procedure if exists UploadInstrument;
 
-DELIMITER $$
+delimeter $$
 create procedure UploadInstrument(
   in pEmailID varchar(100),
   in pTitle varchar(255),
