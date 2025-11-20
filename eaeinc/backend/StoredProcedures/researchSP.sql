@@ -28,15 +28,6 @@ begin
 end$$
 delimiter ;
 
--- Test call and display of test data
-CALL CreateForumPost(
-  'leutee',
-  'How to submit LC/MS data to ORSP?',
-  'Has anyone uploaded mass spec data and tagged it for search?',
-  'mass spec'
-);
-SELECT * FROM Forum ORDER BY forumID DESC;
-
 -- Procedure to create a forum comment
 drop procedure if exists AddForumComment;
 
@@ -62,15 +53,6 @@ begin
   commit;
 end$$
 delimiter ;
-
--- Test comment 
-call AddForumComment(1, 'leutee', 'This is my first comment!');
-
--- Call to display comments for testing purposes
-select commentID, forumID, emailID, body, postedAt
-from ForumComment
-where forumID = 1
-order by postedAt desc;
 
 -- Procedure to upload an instrument 
 drop procedure if exists UploadInstrument;
@@ -111,18 +93,7 @@ begin
 end$$
 delimiter ;
 
--- Test instrument upload
-call UploadInstrument(
-  'leutee',
-  'LC/MS Data Template',
-  'https://merrimack.edu/uploads/lcms_template.pdf',
-  'mass spec'
-);
 
--- Test call to display data in table
-select instrumentID, title, emailID, uploadedAt, searchTag
-from Instrument
-order by instrumentID desc;
 
 
 
