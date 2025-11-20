@@ -1,6 +1,6 @@
 use ResearchPageDB;
 
--- Procedure to create a forum post
+-- Procedure to store forum post data in database once provided by user
 delimiter $$
 create procedure CreateForumPost(
   in pEmailID varchar(100),

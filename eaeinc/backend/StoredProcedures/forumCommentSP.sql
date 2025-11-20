@@ -1,6 +1,6 @@
 use ResearchPageDB;
 
--- Procedure to create a forum comment
+-- Procedure to add forum comment data to database once provided by user
 drop procedure if exists AddForumComment;
 
 delimeter $$
