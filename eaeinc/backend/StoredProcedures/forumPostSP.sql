@@ -20,7 +20,7 @@ begin
 
     update UserInfo
     set currentContributionScore = currentContributionScore + 3,
-        highestContributionScore = greatest(highestContributionScore, currentContributionScore + 5)
+        highestContributionScore = greatest(highestContributionScore, currentContributionScore + 3)
     where emailID = pEmailID;
   commit;
 
