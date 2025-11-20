@@ -12,8 +12,14 @@ create table UserInfo (
     department varchar(100),
     currentContributionScore int default 0,
     highestContributionScore int default 0,
-    isAdmin boolean default 0,
+    isAdmin boolean default 0, 
     pictureUrl varchar(500)
+);
+
+-- Tag Table (loaded from CSV)
+create table Tag (
+    tagID int auto_increment primary key,
+    tagName varchar(100) unique not null
 );
 
 -- Instrument Table
@@ -24,9 +30,18 @@ create table Instrument (
     emailID varchar(100),
     uploadedAt timestamp default current_timestamp,
     fileURL varchar(500),
-    searchTag varchar(100),
     isDeleted boolean default 0,
     foreign key (emailID) references UserInfo(emailID)
+);
+
+-- InstrumentTag junction table
+-- Allows many-to-many relationship between instruments and tags
+create table InstrumentTag (
+    instrumentID int not null,
+    tagID int not null,
+    primary key (instrumentID, tagID),
+    foreign key (instrumentID) references Instrument(instrumentID) on delete cascade,
+    foreign key (tagID) references Tag(tagID) on delete cascade
 );
 
 -- Forum Table
@@ -49,7 +64,7 @@ create table ForumComment (
     forumID int not null,
     emailID varchar(100),
     body text not null,
-    postedAt timestamp not null,
+    postedAt timestamp not null default current_timestamp,
     isDeleted boolean default 0,
     foreign key (forumID) references Forum(forumID) on delete cascade,
     foreign key (emailID) references UserInfo(emailID) on delete cascade
@@ -80,7 +95,6 @@ create table eventAttendees (
     foreign key (attendeeEmailID) references UserInfo(emailID),
     primary key (eventID, attendeeEmailID)
 );
-
 
 
     
