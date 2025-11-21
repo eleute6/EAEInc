@@ -1,14 +1,14 @@
 package app.models;
 
 public class User {
-    public String firstName;
-    public String lastName;
-    public String imageUrl;
+    public String emailID;
+    public String userName;
+    public String pictureUrl;
 
-    public User(String firstName, String lastName, String imageUrl) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.imageUrl = imageUrl;
+    public User(String emailID, String userName, String pictureUrl) {
+        this.emailID = emailID;
+        this.userName = userName;
+        this.pictureUrl = pictureUrl;
     }
 
     public User() {}

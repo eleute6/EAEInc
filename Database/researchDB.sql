@@ -36,6 +36,7 @@ create table Forum (
     title varchar(255) not null,
     body text not null,
     emailID varchar(100),
+    imageUrl varchar(500),
     uploadedAt timestamp default current_timestamp,
     searchTag varchar(100),
     isDeleted boolean default 0,

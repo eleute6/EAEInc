@@ -15,31 +15,37 @@ public class PostService {
     // Create a post linked to a user
     public Post createPost(String text, String image, User user) throws SQLException {
         
-        // LEAVING THIS HERE FOR NOW BUT NOT SURE IF THIS IS RIGHT FOR THE DATABASE
-        String sql = "INSERT INTO Forum (text, image, userFirstName, userLastName, userImageUrl) VALUES (?, ?, ?, ?, ?)";
+        String emailID = user.emailID;
+        String title = text != null ? text : "";
+        String body = text != null ? text : ""; 
+        String imageUrl = text != null ? text : "";
+        String searchTag = "general"; // default tag
+        
+        
+        String callSql = "{CALL CreateForumPost(?, ?, ?, ?, ?)}";
 
         try (Connection conn = DriverManager.getConnection(DATABASE_URI, DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            CallableStatement stmt = conn.prepareCall(callSql)) {
 
-            stmt.setString(1, text != null ? text : "");
-            stmt.setString(2, image != null ? image : "");
-            stmt.setString(3, user.firstName != null ? user.firstName : "");
-            stmt.setString(4, user.lastName != null ? user.lastName : "");
-            stmt.setString(5, user.imageUrl != null ? user.imageUrl : "");
+            stmt.setString(1, emailID);
+            stmt.setString(2, title);
+            stmt.setString(3, body);
+            stmt.setString(4, imageUrl);
+            stmt.setString(5, searchTag);
+            
 
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException("Creating post failed, no rows affected.");
-            }
+            boolean hasResult = stmt.execute();
 
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    int postId = generatedKeys.getInt(1);
-                    return new Post(postId, text, image, user);
-                } else {
-                    throw new SQLException("Creating post failed, no ID obtained.");
+            int postId = -1;
+            if (hasResult) {
+                try (ResultSet rs = stmt.getResultSet()) {
+                    if (rs.next()) {
+                        postId = rs.getInt("forumID");
+                    }
                 }
             }
+
+            return new Post(postId, text, image, user);
         }
     }
 
@@ -54,14 +60,14 @@ public class PostService {
 
             while (rs.next()) {
                 // Make sure user fields are never null
-                String firstName = rs.getString("userFirstName");
-                String lastName = rs.getString("userLastName");
-                String imageUrl = rs.getString("userImageUrl");
+                String emailID = rs.getString("emailID");
+                String userName = rs.getString("userName");
+                String pictureUrl = rs.getString("pictureUrl");
 
                 User user = new User(
-                        firstName != null ? firstName : "",
-                        lastName != null ? lastName : "",
-                        imageUrl != null ? imageUrl : ""
+                        emailID != null ? emailID : "",
+                        userName != null ? userName : "",
+                        pictureUrl != null ? pictureUrl : ""
                 );
 
                 // Create post with text, image, and user

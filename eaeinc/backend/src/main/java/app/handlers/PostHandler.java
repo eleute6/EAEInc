@@ -94,9 +94,9 @@ public class PostHandler implements HttpHandler {
             if (incoming.user == null) incoming.user = new User("", "", ""); // default empty user
 
             // Ensure fields in user are non-null
-            if (incoming.user.firstName == null) incoming.user.firstName = "";
-            if (incoming.user.lastName == null) incoming.user.lastName = "";
-            if (incoming.user.imageUrl == null) incoming.user.imageUrl = "";
+            if (incoming.user.emailID == null) incoming.user.emailID = "";
+            if (incoming.user.userName == null) incoming.user.userName = "";
+            if (incoming.user.pictureUrl == null) incoming.user.pictureUrl = "";
 
             // Create the post using PostService
             Post created = postService.createPost(
