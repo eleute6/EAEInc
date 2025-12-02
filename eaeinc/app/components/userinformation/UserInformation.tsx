@@ -2,6 +2,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import PostCreator from "./PostCreator";
+import EditProfile from "./EditProfile";
 
 interface User {
   name: string;
@@ -21,6 +22,7 @@ export default function UserInformation({ user }: Props) {
   const imageUrl = user.picture;
 
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   return (
     <div className="flex flex-col justify-center items-center bg-white mr-6 rounded-lg border py-4 px-6 space-y-2">
@@ -51,7 +53,11 @@ export default function UserInformation({ user }: Props) {
         >
           Create Post
         </Button>
-        <Button variant="outline" className="w-full md:w-1/2">
+        <Button
+          variant="outline"
+          className="w-full md:w-1/2"
+          onClick={() => setShowEditProfile(true)}
+        >
           Edit Profile
         </Button>
       </div>
@@ -61,6 +67,18 @@ export default function UserInformation({ user }: Props) {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
             <PostCreator user={user} onClose={() => setShowCreatePost(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Modal for editing profile */}
+      {showEditProfile && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <EditProfile
+              user={user}
+              onClose={() => setShowEditProfile(false)}
+            />
           </div>
         </div>
       )}
