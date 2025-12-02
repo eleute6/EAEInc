@@ -1,5 +1,6 @@
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import React from "react";
+import { Button } from "./ui/button";
 
 interface User {
   name: string;
@@ -36,6 +37,15 @@ export default function UserInformation({ user }: Props) {
           {firstName} {lastName}
         </p>
         <p className="text-sm text-gray-500">{user.email}</p>
+      </div>
+
+      <div className="flex gap-3 mt-4 w-full">
+        <Button variant="outline" className="w-full md:w-1/2">
+          Create Post
+        </Button>
+        <Button variant="outline" className="w-full md:w-1/2">
+          Edit Profile
+        </Button>
       </div>
     </div>
   );
