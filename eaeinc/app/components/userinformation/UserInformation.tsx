@@ -1,6 +1,7 @@
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import React from "react";
-import { Button } from "./ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import React, { useState } from "react";
+import { Button } from "../ui/button";
+import PostCreator from "./PostCreator";
 
 interface User {
   name: string;
@@ -18,6 +19,8 @@ export default function UserInformation({ user }: Props) {
   const lastName = rest.join(" ");
 
   const imageUrl = user.picture;
+
+  const [showCreatePost, setShowCreatePost] = useState(false);
 
   return (
     <div className="flex flex-col justify-center items-center bg-white mr-6 rounded-lg border py-4 px-6 space-y-2">
@@ -39,14 +42,28 @@ export default function UserInformation({ user }: Props) {
         <p className="text-sm text-gray-500">{user.email}</p>
       </div>
 
+      {/* Buttons */}
       <div className="flex gap-3 mt-4 w-full">
-        <Button variant="outline" className="w-full md:w-1/2">
+        <Button
+          variant="outline"
+          className="w-full md:w-1/2"
+          onClick={() => setShowCreatePost(true)}
+        >
           Create Post
         </Button>
         <Button variant="outline" className="w-full md:w-1/2">
           Edit Profile
         </Button>
       </div>
+
+      {/* Modal for creating post */}
+      {showCreatePost && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <PostCreator user={user} onClose={() => setShowCreatePost(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

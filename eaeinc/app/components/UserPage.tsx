@@ -1,5 +1,5 @@
 import Header from "@/app/components/Header";
-import UserInformation from "./UserInformation";
+import UserInformation from "./userinformation/UserInformation";
 import PostForum from "./PostForum";
 import HelpfulResources from "./HelpfulResources";
 import ContributionLeaderboard from "./ContributionLeaderboard";
