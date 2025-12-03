@@ -1,6 +1,6 @@
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "../../ui/avatar";
 import React, { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import PostCreator from "./PostCreator";
 import EditProfile from "./EditProfile";
 

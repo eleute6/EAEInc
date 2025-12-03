@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Button } from "../ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { Button } from "../../ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "../../ui/avatar";
 import { ImageIcon } from "lucide-react";
 
 interface EditProfileProps {
