@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import UserPage from "@/app/components/homepage/UserPage"; // make sure the path is correct
-import InstrumentConsortium from "./components/consortium/InstrumentConsortium";
+import UserPage from "@/app/components/homepage/UserPage"; // adjust path if needed
 
 interface User {
   name: string;
@@ -20,7 +19,6 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Decode JWT to extract payload
   function decodeJWT(token: string) {
     const base64Url = token.split(".")[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -35,13 +33,11 @@ export default function Home() {
 
   const handleCredentialResponse = async (response: any) => {
     setLoading(true);
-
     try {
       const id_token = response.credential;
       const payload = decodeJWT(id_token);
       const email = payload.email;
 
-      // STEP 1: Send ID token to backend to insert/update database
       const authRes = await fetch("http://localhost:5500/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -55,7 +51,6 @@ export default function Home() {
         return;
       }
 
-      // STEP 2: Fetch user data from backend
       const userRes = await fetch(
         `http://localhost:5500/api/user?email=${encodeURIComponent(email)}`
       );
@@ -77,7 +72,6 @@ export default function Home() {
     }
   };
 
-  // Load Google Sign-In button
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
@@ -98,10 +92,8 @@ export default function Home() {
 
   if (loading) return <div>Loading...</div>;
 
-  // Render full UserPage layout after login
   if (user) return <UserPage user={user} />;
 
-  // Show login page if not logged in
   return (
     <main className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-sm w-full">
