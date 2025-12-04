@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import SessionProviderWrapper from "@/components/SessionProviderWrapper";
 import "./globals.css";
 import Header from "@/components/Header";
 
@@ -28,15 +29,12 @@ export default function RootLayout({ children, user }: RootLayoutProps) {
     <html lang="en">
       <body className="min-h-screen flex flex-col">
         {/* Header shows only if user is logged in */}
-        {user && (
-          <header className="border-b sticky top-0 bg-white z-50">
-            <Header user={user} />
-          </header>
-        )}
-
-        <div className="bg-[#F4F2ED] flex-1 w-full">
-          <main>{children}</main>
-        </div>
+        <SessionProviderWrapper>
+        <Header /> {/* Header now uses useSession internally */}
+          <div className="bg-[#F4F2ED] flex-1 w-full">
+            <main>{children}</main>
+          </div>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
