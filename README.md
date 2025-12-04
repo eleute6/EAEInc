@@ -26,3 +26,5 @@ Team Charter Link: https://docs.google.com/document/d/1vrtDhfvEznrZ6MjtECMBECAcc
 Requirements Document Link: https://docs.google.com/document/d/1Ade3tVU4X-7kqeqcw0BHOVmbTIVXMpSTkd8nQ3UPbBk/edit?usp=sharing
 
 Functional Specifications Document Draft Link: https://docs.google.com/document/d/1xkArV3JtnkEcrz7OUe9s0ItwM9nVrACTcvVqYFqhmGA/edit?tab=t.0
+
+Poster: [EAEIncPoster(2).pdf](https://github.com/user-attachments/files/23945334/EAEIncPoster.2.pdf)
