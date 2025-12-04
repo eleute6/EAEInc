@@ -28,13 +28,9 @@ export default function RootLayout({ children, user }: RootLayoutProps) {
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col">
-        {/* Header shows only if user is logged in */}
-        <SessionProviderWrapper>
-        <Header /> {/* Header now uses useSession internally */}
           <div className="bg-[#F4F2ED] flex-1 w-full">
-            <main>{children}</main>
+            <SessionProviderWrapper>{children}</SessionProviderWrapper>
           </div>
-        </SessionProviderWrapper>
       </body>
     </html>
   );
