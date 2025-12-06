@@ -17,41 +17,22 @@ const handler = NextAuth({
     callbacks: {
         // CALLBACK FROM SIGN-IN TO VERIFY
         async signIn({ account }) {
-  try {
-    const idToken = account?.id_token;
-    if (!idToken) return false;
-
-    const response = await fetch(process.env.BACKEND_URL!, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
-    });
-
-    const raw = await response.text();
-    console.log("Backend HTTP status:", response.status);
-    console.log("Backend raw response:", raw);
-
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch (err) {
-      console.error("Backend did not return JSON:", err);
-      return false;
-    }
-
-    return data.status === "valid";
-  } catch (error) {
-    console.error("Error during sign-in:", error);
-    return false;
-  }
+          return true;
 },
         //CALLBACK TO STORE TOKEN IN SESSION
-        async jwt({ token, account }) {
-            if (account?.id_token) {
-                token.idToken = account.id_token;
-            }
-            return token;
-        },
+        async jwt({ token, account, user }) {
+      if (account?.id_token) {
+        token.idToken = account.id_token;
+      }
+      if (user) {
+        token.user = {
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        };
+      }
+      return token;
+    },
 
         async session({ session }) {
         try {
