@@ -17,40 +17,34 @@ const handler = NextAuth({
     callbacks: {
         // CALLBACK FROM SIGN-IN TO VERIFY
         async signIn({ account }) {
-          try {
-            const idToken = account?.id_token;
-            if (!idToken) return false;
+  try {
+    const idToken = account?.id_token;
+    if (!idToken) return false;
 
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    const response = await fetch(process.env.BACKEND_URL!, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken }),
+    });
 
-            const response = await fetch(process.env.BACKEND_URL!, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ idToken }),
-              signal: controller.signal,
-            }).catch(err => {
-              console.error("Fetch to BACKEND_URL failed:", err);
-              return null;
-            });
+    const raw = await response.text();
+    console.log("Backend HTTP status:", response.status);
+    console.log("Backend raw response:", raw);
 
-            clearTimeout(timeout);
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (err) {
+      console.error("Backend did not return JSON:", err);
+      return false;
+    }
 
-            if (!response) return false;
-
-            const data = await response.json().catch(() => {
-              console.error("Invalid JSON from backend");
-              return null;
-            });
-
-            if (!data) return false;
-
-            return data.status === "valid";
-      } catch (error) {
-        console.error("Error during sign-in:", error);
-        return false;
-      }
-    },
+    return data.status === "valid";
+  } catch (error) {
+    console.error("Error during sign-in:", error);
+    return false;
+  }
+},
         //CALLBACK TO STORE TOKEN IN SESSION
         async jwt({ token, account }) {
             if (account?.id_token) {
