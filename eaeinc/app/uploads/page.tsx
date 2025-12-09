@@ -10,7 +10,7 @@ interface User {
   picture: string;
 }
 
-export default function ConsortiumPage() {
+export default function UploadsPage() {
   const [user, setUser] = useState<User | null>(null);
 
   // Example: fetch user from your backend or reuse auth logic
