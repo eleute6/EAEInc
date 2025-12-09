@@ -222,9 +222,12 @@ export default function UploadPage() {
           </p>
           <Combobox
             value={formData.keywords}
-            onChange={(selected) =>
-              setFormData((prev) => ({ ...prev, keywords: selected }))
-            }
+            onChange={(selected) => {
+              // enforce max of 5
+              if (selected.length <= 5) {
+                setFormData((prev) => ({ ...prev, keywords: selected }));
+              }
+            }}
             multiple
           >
             <div className="relative">
@@ -232,7 +235,7 @@ export default function UploadPage() {
                 className="w-full border rounded-md px-4 py-2 shadow-sm"
                 onChange={(event) => setQuery(event.target.value)}
                 displayValue={(keywords: string[]) => keywords.join(", ")}
-                placeholder="Search or select keywords..."
+                placeholder="Search or select up to 5 keywords..."
                 required
               />
               <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg z-10">
@@ -245,9 +248,17 @@ export default function UploadPage() {
                   <Combobox.Option
                     key={kw}
                     value={kw}
-                    className={({ active }) =>
+                    disabled={
+                      formData.keywords.length >= 5 &&
+                      !formData.keywords.includes(kw)
+                    }
+                    className={({ active, disabled }) =>
                       `cursor-pointer select-none px-4 py-2 ${
-                        active ? "bg-blue-600 text-white" : "text-gray-900"
+                        disabled
+                          ? "text-gray-400 cursor-not-allowed"
+                          : active
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-900"
                       }`
                     }
                   >
@@ -257,6 +268,11 @@ export default function UploadPage() {
               </Combobox.Options>
             </div>
           </Combobox>
+          {formData.keywords.length >= 5 && (
+            <p className="text-xs text-red-500 mt-1">
+              You can select a maximum of 5 keywords.
+            </p>
+          )}
         </div>
 
         {/* File Upload */}
