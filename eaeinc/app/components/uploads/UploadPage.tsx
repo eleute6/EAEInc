@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
+import { Combobox } from "@headlessui/react";
 
 export default function UploadPage() {
   const [formData, setFormData] = useState({
@@ -15,34 +16,108 @@ export default function UploadPage() {
   });
 
   const [showPopup, setShowPopup] = useState(false);
+  const [query, setQuery] = useState("");
 
+  //Keywords
   const preapprovedKeywords = [
-    "Biology",
-    "Chemistry",
-    "Physics",
-    "Engineering",
-    "SocialScience",
-    "DataScience",
+    "AI",
+    "Allowable Costs",
+    "Auditing",
+    "Award",
+    "Budget",
+    "Budget Justification",
+    "Budget Narrative",
+    "Career Development Award",
+    "Cayuse",
+    "CITI",
+    "Clinical Trial",
+    "Collaborative Research Agreement",
+    "Compliance",
+    "Conflict of Interest",
+    "Consultant",
+    "Cost Transfer",
+    "Data & Safety Monitoring Board (DSMB)",
+    "Data Management & Sharing Plan (DMSP)",
+    "Data Safety & Monitoring Plan (DSMP)",
+    "Data Transfer & Use Agreement (DTUA)",
+    "Department of Defense",
+    "Department of Education",
+    "Department of Energy",
+    "Department of Health & Human Services",
+    "Department of Justice",
+    "Direct Cost",
+    "Environmental Protection Agency (EPA)",
+    "Environmental Health & Safety",
+    "Equipment",
+    "ERA Commons",
+    "Export Controls",
+    "Facilities",
+    "Facilities & Administration Cost (F&A)",
+    "FDA",
+    "Federal Grant",
+    "FERPA",
+    "Fiscal Year (FY)",
+    "Foundation Grant",
+    "Fringe Benefits",
+    "Gift Cards",
+    "Grant Officer",
+    "Grants.gov",
+    "Human Subjects",
+    "Indemnification",
+    "iEDISON",
+    "In-Kind Cost Share",
+    "Indirect Cost",
+    "Institutional Base Salary",
+    "Institutional Biosafety Committee (IBC)",
+    "Institutional Review Board (IRB)",
+    "Intellectual Property (IP)",
+    "Internal Revenue Code",
+    "Just-In-Time (JIT)",
+    "K Award",
+    "Letter of Intent",
+    "Mandatory Cost Sharing",
+    "Material Transfer & Usa Agreement (MTUA)",
+    "Modifications",
+    "National Institute of Health (NIH)",
+    "National Science Foundation (NSF)",
+    "Non-Disclosure Agreement (NDA)",
+    "P Grants",
+    "Patent",
+    "Percent Effort",
+    "Post-Award",
+    "Pre-Award",
+    "Procurement",
+    "Project Period",
+    "Proposal Development",
+    "Proposal Routing Form",
+    "Qualtrics",
+    "R01",
+    "R03",
+    "R13",
+    "R15",
+    "R21",
+    "REDCap",
+    "Research Misconduct",
+    "SBIR",
+    "Small Business Technology Transfer (STTR)",
+    "Sponsored Research Agreement (SRA)",
+    "Stipend",
+    "Study Closure",
+    "Subagreement",
+    "Subcontract",
+    "Subrecipient",
+    "Survey",
+    "System for Award Management (SAM)",
+    "USDA",
+    "Waiver of Liability",
   ];
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleKeywordSelect = (keyword: string) => {
-    setFormData((prev) => {
-      const alreadySelected = prev.keywords.includes(keyword);
-      return {
-        ...prev,
-        keywords: alreadySelected
-          ? prev.keywords.filter((k) => k !== keyword)
-          : [...prev.keywords, keyword],
-      };
-    });
-  };
+  const filteredKeywords =
+    query === ""
+      ? preapprovedKeywords
+      : preapprovedKeywords.filter((kw) =>
+          kw.toLowerCase().includes(query.toLowerCase())
+        );
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -51,11 +126,7 @@ export default function UploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // For now, just show popup instead of backend
     setShowPopup(true);
-
-    // Reset form
     setFormData({
       firstName: "",
       lastName: "",
@@ -66,7 +137,6 @@ export default function UploadPage() {
     });
   };
 
-  // Auto-close popup after 5 seconds
   useEffect(() => {
     if (showPopup) {
       const timer = setTimeout(() => setShowPopup(false), 5000);
@@ -76,7 +146,6 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      {/* Page Header */}
       <h1 className="text-2xl font-bold text-gray-800 border-b pb-2">
         Upload Research
       </h1>
@@ -85,8 +154,8 @@ export default function UploadPage() {
         you give permission for other users to view and download your work.
       </p>
 
-      {/* Upload Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* First/Last Name */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="block text-sm font-medium text-gray-700">
             First Name <span className="text-red-500">*</span>
@@ -94,7 +163,9 @@ export default function UploadPage() {
               type="text"
               name="firstName"
               value={formData.firstName}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, firstName: e.target.value }))
+              }
               className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
               required
             />
@@ -105,58 +176,87 @@ export default function UploadPage() {
               type="text"
               name="lastName"
               value={formData.lastName}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, lastName: e.target.value }))
+              }
               className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
               required
             />
           </label>
         </div>
 
+        {/* Email */}
         <label className="block text-sm font-medium text-gray-700">
           Email Address <span className="text-red-500">*</span>
           <input
             type="email"
             name="email"
             value={formData.email}
-            onChange={handleChange}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, email: e.target.value }))
+            }
             className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
             required
           />
         </label>
 
+        {/* Description */}
         <label className="block text-sm font-medium text-gray-700">
           Brief Description <span className="text-red-500">*</span>
           <textarea
             name="description"
             value={formData.description}
-            onChange={handleChange}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
             className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
             rows={4}
             required
           />
         </label>
 
-        {/* Keyword Selector */}
+        {/* Keyword Dropdown */}
         <div>
           <p className="font-semibold mb-2">
             Select Keywords <span className="text-red-500">*</span>
           </p>
-          <div className="flex flex-wrap gap-2">
-            {preapprovedKeywords.map((keyword) => (
-              <button
-                type="button"
-                key={keyword}
-                onClick={() => handleKeywordSelect(keyword)}
-                className={`px-3 py-1 rounded-md border ${
-                  formData.keywords.includes(keyword)
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {keyword}
-              </button>
-            ))}
-          </div>
+          <Combobox
+            value={formData.keywords}
+            onChange={(selected) =>
+              setFormData((prev) => ({ ...prev, keywords: selected }))
+            }
+            multiple
+          >
+            <div className="relative">
+              <Combobox.Input
+                className="w-full border rounded-md px-4 py-2 shadow-sm"
+                onChange={(event) => setQuery(event.target.value)}
+                displayValue={(keywords: string[]) => keywords.join(", ")}
+                placeholder="Search or select keywords..."
+                required
+              />
+              <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg z-10">
+                {filteredKeywords.length === 0 && (
+                  <div className="cursor-default select-none px-4 py-2 text-gray-500">
+                    No results found.
+                  </div>
+                )}
+                {filteredKeywords.map((kw) => (
+                  <Combobox.Option
+                    key={kw}
+                    value={kw}
+                    className={({ active }) =>
+                      `cursor-pointer select-none px-4 py-2 ${
+                        active ? "bg-blue-600 text-white" : "text-gray-900"
+                      }`
+                    }
+                  >
+                    {kw}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            </div>
+          </Combobox>
         </div>
 
         {/* File Upload */}
