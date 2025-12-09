@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
+import { X } from "lucide-react";
 
 export default function UploadPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ export default function UploadPage() {
     keywords: [] as string[],
     file: null as File | null,
   });
+
+  const [showPopup, setShowPopup] = useState(false);
 
   const preapprovedKeywords = [
     "Biology",
@@ -49,33 +52,27 @@ export default function UploadPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const body = new FormData();
-    body.append("firstName", formData.firstName);
-    body.append("lastName", formData.lastName);
-    body.append("email", formData.email);
-    body.append("description", formData.description);
-    body.append("keywords", JSON.stringify(formData.keywords));
-    if (formData.file) body.append("file", formData.file);
+    // For now, just show popup instead of backend
+    setShowPopup(true);
 
-    const res = await fetch("/api/upload-research", {
-      method: "POST",
-      body,
+    // Reset form
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      description: "",
+      keywords: [],
+      file: null,
     });
-
-    if (res.ok) {
-      alert("Upload successful!");
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        description: "",
-        keywords: [],
-        file: null,
-      });
-    } else {
-      alert("Upload failed. Please try again.");
-    }
   };
+
+  // Auto-close popup after 5 seconds
+  useEffect(() => {
+    if (showPopup) {
+      const timer = setTimeout(() => setShowPopup(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPopup]);
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
@@ -172,7 +169,7 @@ export default function UploadPage() {
               type="file"
               accept=".pdf"
               onChange={handleFileUpload}
-              className="hidden" // hide the raw input
+              className="hidden"
               required
             />
             <Button type="button" variant="default">
@@ -199,6 +196,27 @@ export default function UploadPage() {
           Submit Upload
         </Button>
       </form>
+
+      {/* Popup Modal */}
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 transition-opacity duration-300">
+          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full transform transition-all duration-300 scale-100">
+            {/* Close button */}
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h2 className="text-xl font-bold mb-4">Thank you for submitting</h2>
+            <p className="text-gray-700">
+              After approval, your work will be available in the instrument
+              consortium.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
