@@ -35,7 +35,7 @@ export default function Header({ user }: HeaderProps) {
             </div>
           </Link>
 
-          <Link href="/research">
+          <Link href="/consortium">
             <div className="flex flex-col items-center cursor-pointer">
               <BookOpenIcon className="h-5 w-5" />
               <span className="text-sm mt-1">Consortium</span>
