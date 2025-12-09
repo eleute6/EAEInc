@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import React from "react";
 
-interface User {
+export interface User {
   name: string;
   email: string;
   picture: string;
