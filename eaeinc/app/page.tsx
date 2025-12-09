@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {useSession, signIn, signOut} from "next-auth/react";
-import UserPage from "@/components/UserPage"; // make sure the path is correct
+import { useSession, signIn, signOut } from "next-auth/react";
+import UserPage from "@/app/components//homepage/UserPage"; // make sure the path is correct
 
 interface User {
   name: string;
@@ -17,7 +17,7 @@ declare global {
 }
 
 export default function Home() {
-    const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
 
   if (status === "loading") {
     return (
