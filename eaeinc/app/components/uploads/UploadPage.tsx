@@ -91,49 +91,59 @@ export default function UploadPage() {
       {/* Upload Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            value={formData.firstName}
-            onChange={handleChange}
-            className="border rounded-md px-4 py-2 shadow-sm"
-            required
-          />
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            value={formData.lastName}
-            onChange={handleChange}
-            className="border rounded-md px-4 py-2 shadow-sm"
-            required
-          />
+          <label className="block text-sm font-medium text-gray-700">
+            First Name <span className="text-red-500">*</span>
+            <input
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+              required
+            />
+          </label>
+          <label className="block text-sm font-medium text-gray-700">
+            Last Name <span className="text-red-500">*</span>
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+              required
+            />
+          </label>
         </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Address"
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full border rounded-md px-4 py-2 shadow-sm"
-          required
-        />
+        <label className="block text-sm font-medium text-gray-700">
+          Email Address <span className="text-red-500">*</span>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+            required
+          />
+        </label>
 
-        <textarea
-          name="description"
-          placeholder="Brief description of your upload"
-          value={formData.description}
-          onChange={handleChange}
-          className="w-full border rounded-md px-4 py-2 shadow-sm"
-          rows={4}
-          required
-        />
+        <label className="block text-sm font-medium text-gray-700">
+          Brief Description <span className="text-red-500">*</span>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+            rows={4}
+            required
+          />
+        </label>
 
         {/* Keyword Selector */}
         <div>
-          <p className="font-semibold mb-2">Select Keywords:</p>
+          <p className="font-semibold mb-2">
+            Select Keywords <span className="text-red-500">*</span>
+          </p>
           <div className="flex flex-wrap gap-2">
             {preapprovedKeywords.map((keyword) => (
               <button
@@ -154,13 +164,22 @@ export default function UploadPage() {
 
         {/* File Upload */}
         <div>
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={handleFileUpload}
-            className="w-full"
-            required
-          />
+          <p className="block text-sm font-medium text-gray-700 mb-1">
+            Upload File (PDF only) <span className="text-red-500">*</span>
+          </p>
+          <label className="inline-block">
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileUpload}
+              className="hidden" // hide the raw input
+              required
+            />
+            <Button type="button" variant="default">
+              <span>Select File</span>
+            </Button>
+          </label>
+
           {formData.file && (
             <p className="text-sm text-gray-600 mt-2">
               Attached:{" "}
