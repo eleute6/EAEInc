@@ -52,7 +52,7 @@ create table Forum (
     body text not null,
     emailID varchar(100),
     uploadedAt timestamp default current_timestamp,
-    searchTag varchar(100),
+    likeCount int default 0,
     isDeleted boolean default 0,
     foreign key (emailID) references UserInfo(emailID)
 );
