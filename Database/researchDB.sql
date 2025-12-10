@@ -28,6 +28,7 @@ create table Tag (
 create table Instrument (
     instrumentID int auto_increment primary key,
     title varchar(255) not null,
+    description varchar(5000),
     emailID varchar(100),
     uploadedAt timestamp default current_timestamp,
     fileURL varchar(500),
