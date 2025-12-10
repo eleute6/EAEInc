@@ -48,7 +48,6 @@ create table InstrumentTag (
 -- Stores information about a given forum post
 create table Forum (
     forumID int auto_increment primary key,
-    title varchar(255) not null,
     body text not null,
     emailID varchar(100),
     likeCount int default 0,
