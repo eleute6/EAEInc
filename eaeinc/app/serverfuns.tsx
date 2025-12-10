@@ -19,6 +19,7 @@ interface UserFull {
     email: string;
     picture: string;
     department: string;
+    bio: string;
     currentContributionScore?: number;
     highestContributionScore?: number;
     isAdmin: boolean;
@@ -27,6 +28,7 @@ interface UserFull {
 interface Instruments {
     id: number;
     title: string;
+    description: string;
     emailID: string;
     upload: number;
     filePath: string;
@@ -48,13 +50,13 @@ export async function fetchInfoSmall(email: string) {
     try {
         // STEP 1: Query database for basic user info
         const [rows] = await db.execute(
-            'SELECT userName, pictureUrl FROM Users WHERE emailID = ?',
+            'SELECT userName, pictureURL FROM UserInfo WHERE emailID = ?',
             [email] );
 
         // STEP 2: Make the User object for use.
         const user: User = {
             name: (rows as any[])[0].userName || "Unknown User",
-            picture: (rows as any[])[0].pictureUrl || "",
+            picture: (rows as any[])[0].pictureURL || "",
             email: email
         };
         return user;
@@ -71,13 +73,14 @@ export async function fetchInfoFull(email: string) {
     try {
         // STEP 1: Query database for full user info
         const [rows] = await db.execute(
-            'SELECT userName, department, currentContributionScore, highestContributionScore, isAdmin, pictureUrl FROM Users WHERE emailID = ?',
+            'SELECT userName, department, currentContributionScore, highestContributionScore, isAdmin, pictureURL FROM UserInfo WHERE emailID = ?',
             [email] );
         
         // STEP 2: Make the User object for use.
         const user: UserFull = {
             name: (rows as any[])[0].userName || "Currently Empty",
-            picture: (rows as any[])[0].pictureUrl || "",
+            picture: (rows as any[])[0].pictureURL || "",
+            bio: (rows as any[])[0].bio || "No Bio Set",
             email: email,
             department: (rows as any[])[0].department || "Currently Empty",
             currentContributionScore: (rows as any[])[0].currentContributionScore || 0,
@@ -97,7 +100,7 @@ export async function fetchInfoFull(email: string) {
 export async function initialUserInfo(name: string, email: string, picture: string, admin: boolean) {
     /* STEP 1: Check if User Already Exists */
     const [rows] = await db.execute(
-        'SELECT COUNT(*) as count FROM Users WHERE emailID = ?',
+        'SELECT COUNT(*) as count FROM UserInfo WHERE emailID = ?',
         [email] );
     const count = (rows as any[])[0].count || 0;
 
@@ -105,8 +108,8 @@ export async function initialUserInfo(name: string, email: string, picture: stri
     if (count === 0) {
         try {
             await db.execute(
-                'INSERT INTO Users (userName, emailID, pictureUrl, department, currentContributionScore, highestContributionScore, isAdmin) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [name, email, picture, 'Not Specified', 0, 0, admin]
+                'INSERT INTO UserInfo (userName, emailID, pictureURL, bio, department, currentContributionScore, highestContributionScore, isAdmin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [name, email, picture, 'Not Specified', 'Not Specified', 0, 0, admin]
             );
         }
         // Usual error catching.
@@ -124,13 +127,14 @@ export async function updateUserInfo(fData: FormData) {
     const name = fData.get('name') as string;
     const department = fData.get('department') as string;
     const email = fData.get('email') as string;
+    const bio = fData.get('bio') as string;
     const picture = fData.get('picture') as string;
 
     // STEP 2: Update database with new information
     try {
         await db.execute(
-            'UPDATE Users SET userName = ?, department = ?, pictureUrl = ? WHERE emailID = ?',
-            [name, department, picture, email]
+            'UPDATE UserInfo SET userName = ?, department = ?, pictureURL = ?, bio = ? WHERE emailID = ?',
+            [name, department, picture, bio, email]
         );
     }
     // Usual error catching.
@@ -145,7 +149,7 @@ export async function updateUserInfo(fData: FormData) {
 export async function updateContributionScore(email: string, score: number) {
     try { //STEP 1: Update database with new contribution score.
         await db.execute(
-            'UPDATE Users SET currentContributionScore = currentContributionScore + ? WHERE emailID = ?',
+            'UPDATE UserInfo SET currentContributionScore = currentContributionScore + ? WHERE emailID = ?',
             [score, email]
         );
     }
@@ -163,18 +167,18 @@ export async function updateContributionScore(email: string, score: number) {
     and then update the list of forum posts.    */
 export async function sendPost(post: Post) {
     // STEP 1: Extract data from post object
-     const title = "post" + post.id; // Placeholder Title
      const text = post.text;
-     const image = post.image; // Not Used in DB Currently? 
+     const image = post.image;
      const user = post.user;
      const email = user.email;
+     const name = user.firstName + ' ' + user.lastName;
 
      // STEP 2: Send data to backend
      try {
         //Try to send to database the new post.
         await db.execute(
-            'INSERT INTO Forum (title, body, emailID, searchTag) VALUES (?, ?, ?, ?)', //All manually filled information for a post.
-            [title, text, email, 'general'] //The values to insert into the database.
+            'INSERT INTO Forum (body, userName, imageURL, emailID) VALUES (?, ?, ?, ?)', //All manually filled information for a post.
+            [text, name, image, email] //The values to insert into the database.
         );
      } //Usual error catching.
      catch (err: any) {
@@ -217,11 +221,11 @@ export async function fetchPosts() {
         const posts: Post[] = (rows as any[]).map((row) => ({
             id: row.forumID,
             text: row.body,
-            image: row.image || null, //Currently nonexistent as well.
-            user: { //Currently nonexistent in the database, so using placeholder data.
-                firstName: row.firstName || "Unknown",
-                lastName: row.lastName || "User",
-                imageUrl: row.imageUrl || "",
+            image: row.imageURL || null, 
+            user: { 
+                firstName: row.name.split(' ')[0] || "Unknown",
+                lastName: row.name.split(' ')[1] || "User",
+                imageUrl: row.pictureURL || "",
                 email: row.emailID || "unknown@email.com"
             }
         }));
@@ -270,14 +274,14 @@ export async function fetchNext(lastPostID: number) {
     const posts: Post[] = (rows as any[]).map((row) => ({
             id: row.forumID,
             text: row.body,
-            image: row.image || null, //Currently nonexistent as well.
-            user: { //Currently nonexistent in the database, so using placeholder data.
-                firstName: row.firstName || "Unknown",
-                lastName: row.lastName || "User",
-                imageUrl: row.imageUrl || "",
+            image: row.imageURL || null, 
+            user: { 
+                firstName: row.name.split(' ')[0] || "Unknown",
+                lastName: row.name.split(' ')[1] || "User",
+                imageUrl: row.pictureURL || "",
                 email: row.emailID || "unknown@email.com"
             }
-        }));
+    }));
 
     // STEP 3: Return Posts Array
     return posts;
@@ -330,6 +334,7 @@ export async function fetchConsortiumAll() {
         const instruments: Instruments[] = (rows as any[]).map((row) => ({
             id: row.instrumentID,
             title: row.title,
+            description: row.description,
             emailID: row.emailID,
             upload: row.uploadedAt,
             filePath: row.fileURL
@@ -353,6 +358,7 @@ export async function fetchConsortiumNext(lastInstrumentID: number) {
     // STEP 2: Construct Instruments Array
     const instruments: Instruments[] = (rows as any[]).map((row) => ({
         id: row.instrumentID,
+        description: row.description,
         title: row.title,
         emailID: row.emailID,
         upload: row.uploadedAt,
@@ -374,6 +380,7 @@ export async function fetchConsortiumUser(email: string) {
     const instruments: Instruments[] = (rows as any[]).map((row) => ({
         id: row.instrumentID,
         title: row.title,
+        description: row.description,
         emailID: row.emailID,
         upload: row.uploadedAt,
         filePath: row.fileURL
@@ -395,6 +402,7 @@ export async function fetchConsortiumTag(tag: string) {
     const instruments: Instruments[] = (rows as any[]).map((row) => ({
         id: row.instrumentID,
         title: row.title,
+        description: row.description,
         emailID: row.emailID,
         upload: row.uploadedAt,
         filePath: row.fileURL
@@ -416,6 +424,7 @@ export async function fetchConsortiumTagNext(tag: string, lastInstrumentID: numb
     const instruments: Instruments[] = (rows as any[]).map((row) => ({
         id: row.instrumentID,
         title: row.title,
+        description: row.description,
         emailID: row.emailID,
         upload: row.uploadedAt,
         filePath: row.fileURL
