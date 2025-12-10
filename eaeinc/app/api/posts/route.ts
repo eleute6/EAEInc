@@ -1,3 +1,7 @@
+/*
+Note: I'm not sure why this is here, but it'll be preserved for the sake of credit
+to the ones who worked on it. If it's needed, it can be re-integrated later.
+
 export async function GET() {
   try {
     const res = await fetch("http://localhost:5500/api/posts"); // Java backend
@@ -28,3 +32,4 @@ export async function POST(req: Request) {
     });
   }
 }
+*/

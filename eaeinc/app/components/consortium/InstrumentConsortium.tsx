@@ -4,11 +4,12 @@ import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Search } from "lucide-react";
 
-interface ConsortiumItem {
+export interface ConsortiumItem {
   id: number;
   title: string;
   description: string;
-  department?: string;
+  department?: string; //This field won't be used, but is available for later if desired.
+  tags: string[];
   uploadedBy: string;
   link: string;
 }

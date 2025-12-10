@@ -5,7 +5,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { ImageIcon, XIcon } from "lucide-react";
 
-interface Post {
+export interface Post {
   id: number;
   text: string;
   image?: string | null;
@@ -13,6 +13,8 @@ interface Post {
     firstName: string;
     lastName: string;
     imageUrl: string;
+    //NEW: email field added to user object.
+    email: string;
   };
 }
 
@@ -34,7 +36,9 @@ export default function PostForum({ user }: PostForumProps) {
 
   const firstName = user.name.split(" ")[0];
   const lastName = user.name.split(" ")[1] || "";
-  const userObj = { firstName, lastName, imageUrl: user.picture };
+  // NEW: Need to retrieve email from user.
+  const email = user.email;
+  const userObj = { firstName, lastName, imageUrl: user.picture, email };
 
   // Load posts from backend on load
   useEffect(() => {
