@@ -76,19 +76,6 @@ create table ForumComment (
     foreign key (emailID) references UserInfo(emailID) on delete cascade
 );
 
--- Forum post reply table
--- Stores information about a given reply to a forum post
--- Connects reply to parent posts
-create table ForumReply (
-	replyID int auto_increment primary key,
-    forumID int not null,
-    emailID varchar(100),
-    body text not null, 
-    postedAt timestamp not null default current_timestamp,
-    isDeleted boolean default 0,
-    foreign key (forumID) references Forum(forumID) on delete cascade,
-    foreign key (emailID) references UserInfo(emailID) on delete cascade
-);
 
 -- Upcoming Events Table
 -- Stores information about all events listed in upcoming events section
