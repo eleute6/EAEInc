@@ -70,7 +70,7 @@ export default function UserInformation({ user }: Props) {
       {/* Modal for editing profile */}
       {showEditProfile && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+          <div className="w-full max-w-lg rounded-lg shadow-lg overflow-hidden">
             <EditProfile
               user={user}
               onClose={() => setShowEditProfile(false)}
