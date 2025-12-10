@@ -7,8 +7,9 @@
     any questions should be researched in the technical document.
 */
 'use server'
-import type { Post } from "@/components/PostForum"
+import type { Post } from "@/app/components/homepage/PostForum"
 import type { User } from "@/components/UserInformation"
+import type { ConsortiumItem } from "./components/consortium/InstrumentConsortium"
 import { db } from "@/app/database"
 import { NextResponse } from "next/server";
 
@@ -18,8 +19,8 @@ interface UserFull {
     email: string;
     picture: string;
     department: string;
-    currentContributionScore: number;
-    highestContributionScore: number;
+    currentContributionScore?: number;
+    highestContributionScore?: number;
     isAdmin: boolean;
 }
 
@@ -31,6 +32,12 @@ interface Instruments {
     filePath: string;
 }
 
+interface Comments {
+    commentID: number;
+    forumID: number;
+    emailID: string;
+    body: string;
+}
 /* USER INFO FETCHING */
 
 
@@ -69,16 +76,80 @@ export async function fetchInfoFull(email: string) {
         
         // STEP 2: Make the User object for use.
         const user: UserFull = {
-            name: (rows as any[])[0].userName || "Unknown User",
+            name: (rows as any[])[0].userName || "Currently Empty",
             picture: (rows as any[])[0].pictureUrl || "",
             email: email,
-            department: (rows as any[])[0].department || "Unknown Department",
+            department: (rows as any[])[0].department || "Currently Empty",
             currentContributionScore: (rows as any[])[0].currentContributionScore || 0,
             highestContributionScore: (rows as any[])[0].highestContributionScore || 0,
             isAdmin: (rows as any[])[0].isAdmin || false
         };
         return user;
     } //Usual error catching.
+    catch (err: any) {
+        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+    }
+}
+
+/* INITIALUSERINFO */
+/*  Function used to add initial user information
+    to the database when they first log in.  */
+export async function initialUserInfo(name: string, email: string, picture: string, admin: boolean) {
+    /* STEP 1: Check if User Already Exists */
+    const [rows] = await db.execute(
+        'SELECT COUNT(*) as count FROM Users WHERE emailID = ?',
+        [email] );
+    const count = (rows as any[])[0].count || 0;
+
+    /* STEP 2: If New User, Insert into Database */
+    if (count === 0) {
+        try {
+            await db.execute(
+                'INSERT INTO Users (userName, emailID, pictureUrl, department, currentContributionScore, highestContributionScore, isAdmin) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [name, email, picture, 'Not Specified', 0, 0, admin]
+            );
+        }
+        // Usual error catching.
+        catch (err: any) {
+            return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        }
+    }
+}
+
+/* UPDATEUSERINFO */
+/*  Function used to update user information for profile page
+    in the database based on the information provided.  */
+export async function updateUserInfo(fData: FormData) {
+    // STEP 1: Extract data from FormData
+    const name = fData.get('name') as string;
+    const department = fData.get('department') as string;
+    const email = fData.get('email') as string;
+    const picture = fData.get('picture') as string;
+
+    // STEP 2: Update database with new information
+    try {
+        await db.execute(
+            'UPDATE Users SET userName = ?, department = ?, pictureUrl = ? WHERE emailID = ?',
+            [name, department, picture, email]
+        );
+    }
+    // Usual error catching.
+    catch (err: any) {
+        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+    }
+}
+
+/* UPDATECONTRIBUTIONSCORE */
+/*  Function used to update a user's contribution
+    score in the database based on their email.    */
+export async function updateContributionScore(email: string, score: number) {
+    try { //STEP 1: Update database with new contribution score.
+        await db.execute(
+            'UPDATE Users SET currentContributionScore = currentContributionScore + ? WHERE emailID = ?',
+            [score, email]
+        );
+    }
+    // Usual error catching.
     catch (err: any) {
         return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
     }
@@ -111,6 +182,29 @@ export async function sendPost(post: Post) {
      }
 }
 
+/* SENDCOMMENT */
+/*  Function used to send data from a comment
+    and then update the list of comments for a post.    */
+export async function sendComment(fData: FormData) {
+    // STEP 1: Extract data from comment object
+     const forumID = fData.get('forumID');
+     const body = fData.get('body') as string;
+     const emailID = fData.get('emailID') as string;
+
+    // STEP 2: Send data to backend
+    try {
+        //Try to send to database the new comment.
+        await db.execute(
+            'INSERT INTO ForumComment (forumID, emailID, body) VALUES (?, ?, ?)', //All manually filled information for a comment.
+            [forumID, emailID, body] //The values to insert into the database.
+        );
+    }
+    // Usual error catching.
+    catch (err: any) {
+        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+    }
+}
+
 /* FETCHPOSTS */
 /*  Function used to retrieve the first 50 posts 
     from the database to be displayed in the forum. */
@@ -139,12 +233,37 @@ export async function fetchPosts() {
     }
 }
 
+/* FETCHCOMMENTS */
+/*  Function used to retrieve all comments 
+    for a specific post from the database. */
+export async function fetchComments(forumID: number) {
+    try {
+        // STEP 1: Query Database for Comments
+        const [rows] = await db.execute(
+            'SELECT * FROM ForumComment WHERE forumID = ? AND isDeleted = FALSE ORDER BY commentID ASC',
+            [forumID]); //Gets all comments for the specified post.
+
+        // STEP 2: Construct Comments Array
+        const comments: Comments[] = (rows as any[]).map((row) => ({
+            commentID: row.commentID,
+            forumID: row.forumID,
+            emailID: row.emailID,
+            body: row.body
+        }));
+        // STEP 3: Return Comments Array
+        return comments;
+    } //Usual error catching.
+    catch (err: any) {
+        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+    }
+}
+
 /* FETCHNEXT */
 /*  Function used to retrieve the next 50 posts
     from the database to be displayed in the forum. */
 export async function fetchNext(lastPostID: number) {
     const [rows] = await db.execute(
-        'SELECT * FROM Forum WHERE forumID > ? AND isDeleted = FALSE ORDER BY forumID DESC LIMIT 50',
+        'SELECT * FROM Forum WHERE forumID < ? AND isDeleted = FALSE ORDER BY forumID DESC LIMIT 50',
         [lastPostID]); //Gets the next 50 posts after the last post ID provided.
 
     // STEP 2: Construct Posts Array
@@ -163,6 +282,7 @@ export async function fetchNext(lastPostID: number) {
     // STEP 3: Return Posts Array
     return posts;
 }   
+
 /* DELETEPOST */
 /*  Function used to delete a post from
     the database based on its unique ID.    */
@@ -179,6 +299,21 @@ export async function deletePost(postID: number) {
     }
 }
 
+/* DELETECOMMENT */
+/*  Function used to delete a comment from
+    the database based on its unique ID.    */
+export async function deleteComment(commentID: number) {
+    try {
+        // Fairly simple process, just mark the comment as deleted in the database.
+        await db.execute(
+            'UPDATE ForumComment SET isDeleted = TRUE where commentID = ? AND isDeleted = FALSE', //Sets deleted flag without removing comment from DB.
+            [commentID]
+        );
+    } //Usual error catching.
+    catch (err: any) {
+        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+    }
+}
 
 /* CONSORTIUM */
 
@@ -226,3 +361,98 @@ export async function fetchConsortiumNext(lastInstrumentID: number) {
     // STEP 3: Return Instruments Array
     return instruments; 
 }   
+
+/* FETCHCONSORTIUMUSER */
+/*  Function used to retrieve consortium
+    members uploaded by a specific user.  */
+export async function fetchConsortiumUser(email: string) {
+    const [rows] = await db.execute(
+        'SELECT * FROM Instrument WHERE emailID = ? ORDER BY instrumentID DESC',
+        [email]); //Gets all items uploaded by the specified user.
+
+    // STEP 2: Construct Instruments Array
+    const instruments: Instruments[] = (rows as any[]).map((row) => ({
+        id: row.instrumentID,
+        title: row.title,
+        emailID: row.emailID,
+        upload: row.uploadedAt,
+        filePath: row.fileURL
+    }));
+
+    // STEP 3: Return Instruments Array
+    return instruments; 
+}   
+
+/* FETCHCONSORTIUMTAG */
+/*  Function used to retrieve consortium
+    members based on a specific tag.  */
+export async function fetchConsortiumTag(tag: string) {
+    const [rows] = await db.execute(
+        'SELECT * FROM Instrument WHERE tags LIKE ? ORDER BY instrumentID DESC',
+        [`%${tag}%`]); //Gets all items with the specified tag.
+
+    // STEP 2: Construct Instruments Array
+    const instruments: Instruments[] = (rows as any[]).map((row) => ({
+        id: row.instrumentID,
+        title: row.title,
+        emailID: row.emailID,
+        upload: row.uploadedAt,
+        filePath: row.fileURL
+    }));
+    
+    // STEP 3: Return Instruments Array
+    return instruments;
+}
+
+/* FETCHCONSORTIUMTAGNEXT */
+/*  Function used to retrieve the next set of consortium
+    members based on a specific tag.  */
+export async function fetchConsortiumTagNext(tag: string, lastInstrumentID: number) {
+    const [rows] = await db.execute(
+        'SELECT * FROM Instrument WHERE tags LIKE ? AND instrumentID > ? ORDER BY instrumentID DESC',
+        [`%${tag}%`, lastInstrumentID]); //Gets the next set of items with the specified tag.
+
+    // STEP 2: Construct Instruments Array
+    const instruments: Instruments[] = (rows as any[]).map((row) => ({
+        id: row.instrumentID,
+        title: row.title,
+        emailID: row.emailID,
+        upload: row.uploadedAt,
+        filePath: row.fileURL
+    }));
+
+    // STEP 3: Return Instruments Array
+    return instruments;
+}
+
+/* DELETEINSTRUMENT */
+/*  Function used to delete an instrument from
+    the database based on its unique ID.    */
+export async function deleteInstrument(instrumentID: number) {
+    try {
+        // Fairly simple process, just mark the instrument as deleted in the database.
+        await db.execute(
+            'UPDATE Instrument SET isDeleted = TRUE where instrumentID = ? AND isDeleted = FALSE', //Sets deleted flag without removing instrument from DB.
+            [instrumentID]
+        );
+    } //Usual error catching.
+    catch (err: any) {
+        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+    }
+}
+
+/* UPLOADFILE */
+/*  Function used to upload a file to
+    the database for consortium members.    */
+export async function uploadFile(item: ConsortiumItem, file: File) {
+    //TO DO ::  Need to check if files can be sent directly to local storage or if
+    //          they need to be routed through the backend first.
+}
+
+/* FETCHFILE */
+/*  Function used to retrieve a file from
+    the database based on its file name.    */
+export async function fetchFile(fileName: string) {
+    //TO DO ::  Need to check if files can be pulled directly from local storage or if
+    //          they need to be routed through the backend first.
+}
