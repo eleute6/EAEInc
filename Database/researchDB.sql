@@ -10,10 +10,11 @@ create table UserInfo (
     emailID varchar(100) primary key,   
     userName varchar(100) not null,     
     department varchar(100),
+    bio varchar (5000),
     currentContributionScore int default 0,
     highestContributionScore int default 0,
     isAdmin boolean default 0, 
-    pictureUrl varchar(500)
+    pictureURL varchar(500)
 );
 
 -- Tag Table (loaded from CSV)
@@ -27,6 +28,7 @@ create table Tag (
 create table Instrument (
     instrumentID int auto_increment primary key,
     title varchar(255) not null,
+    description varchar(5000),
     emailID varchar(100),
     uploadedAt timestamp default current_timestamp,
     fileURL varchar(500),
@@ -48,13 +50,17 @@ create table InstrumentTag (
 -- Stores information about a given forum post
 create table Forum (
     forumID int auto_increment primary key,
-    title varchar(255) not null,
     body text not null,
     emailID varchar(100),
+    userName varchar(100),
+    pictureURL varchar(500),
+    likeCount int default 0,
+    imageURL varchar(500),
     uploadedAt timestamp default current_timestamp,
-    searchTag varchar(100),
     isDeleted boolean default 0,
-    foreign key (emailID) references UserInfo(emailID)
+    foreign key (emailID) references UserInfo(emailID),
+    foreign key (userName) references UserInfo(userName),
+    foreign key (pictureURL) references UserInfo(pictureURL)
 );
 
 -- Forum comment table
@@ -70,6 +76,19 @@ create table ForumComment (
     foreign key (emailID) references UserInfo(emailID) on delete cascade
 );
 
+-- Forum post reply table
+-- Stores information about a given reply to a forum post
+-- Connects reply to parent posts
+create table ForumReply (
+	replyID int auto_increment primary key,
+    forumID int not null,
+    emailID varchar(100),
+    body text not null, 
+    postedAt timestamp not null default current_timestamp,
+    isDeleted boolean default 0,
+    foreign key (forumID) references Forum(forumID) on delete cascade,
+    foreign key (emailID) references UserInfo(emailID) on delete cascade
+);
 
 -- Upcoming Events Table
 -- Stores information about all events listed in upcoming events section
