@@ -51,6 +51,7 @@ create table Forum (
     body text not null,
     emailID varchar(100),
     likeCount int default 0,
+    imageURL varchar(500),
     uploadedAt timestamp default current_timestamp,
     isDeleted boolean default 0,
     foreign key (emailID) references UserInfo(emailID)
