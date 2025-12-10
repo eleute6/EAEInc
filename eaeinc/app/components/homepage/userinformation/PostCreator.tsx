@@ -59,7 +59,7 @@ export default function PostCreator({ user, onClose }: PostCreatorProps) {
     ref.current?.reset();
     setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    onClose(); // close modal after posting
+    onClose();
   };
 
   const fileToBase64 = (file: File) =>
@@ -81,27 +81,34 @@ export default function PostCreator({ user, onClose }: PostCreatorProps) {
   };
 
   return (
-    <div className="flex flex-col space-y-4">
-      {/* Header */}
-      <h2 className="text-xl font-bold text-gray-800 border-b pb-2">
-        Create Post
-      </h2>
+    <>
+      {/* Header Bar with Close X */}
+      <div className="bg-[#003768] text-white px-4 py-2 flex items-center justify-between">
+        <h2 className="text-lg font-bold">Create Post</h2>
+        <button
+          onClick={onClose}
+          className="text-white hover:text-[#FDB813] transition"
+          aria-label="Close"
+        >
+          <XIcon className="w-5 h-5" />
+        </button>
+      </div>
 
-      {/* Form */}
+      {/* Form Content */}
       <form
         ref={ref}
         onSubmit={(e) => {
           e.preventDefault();
           handlePostAction(new FormData(ref.current!));
         }}
-        className="flex flex-col space-y-3"
+        className="flex flex-col space-y-3 p-4 bg-white"
       >
         <div className="flex items-center space-x-3">
           <Avatar className="w-12 h-12">
             {userObj.imageUrl ? (
               <AvatarImage src={userObj.imageUrl} />
             ) : (
-              <AvatarFallback>
+              <AvatarFallback className="bg-[#003768] text-white font-bold">
                 {userObj.firstName[0]}
                 {userObj.lastName[0]}
               </AvatarFallback>
@@ -112,7 +119,7 @@ export default function PostCreator({ user, onClose }: PostCreatorProps) {
             type="text"
             name="postInput"
             placeholder="Start writing a post..."
-            className="flex-1 outline-none rounded-full py-3 px-4 border bg-white shadow-sm"
+            className="flex-1 outline-none rounded-full py-3 px-4 border border-[#003768] focus:ring-2 focus:ring-[#FDB813] shadow-sm"
           />
         </div>
 
@@ -129,28 +136,47 @@ export default function PostCreator({ user, onClose }: PostCreatorProps) {
         {preview && (
           <img
             src={preview}
-            className="w-full max-h-64 object-cover rounded-lg"
+            className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
           />
         )}
 
         {/* Action buttons */}
         <div className="flex justify-end space-x-2">
-          <Button type="button" onClick={() => fileInputRef.current?.click()}>
-            <ImageIcon size={16} /> {preview ? "Change" : "Add"} image
+          <Button
+            type="button"
+            className="bg-[#003768] text-white hover:bg-[#FDB813] hover:text-[#003768]"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <ImageIcon size={16} /> {preview ? "Change" : "Add"} Image
           </Button>
 
           {preview && (
-            <Button variant="outline" type="button" onClick={handleRemoveImage}>
+            <Button
+              variant="outline"
+              type="button"
+              className="border-[#003768] text-[#003768] hover:bg-[#FDB813] hover:text-white"
+              onClick={handleRemoveImage}
+            >
               <XIcon size={16} /> Remove
             </Button>
           )}
 
-          <Button type="submit">Post</Button>
-          <Button variant="ghost" type="button" onClick={onClose}>
+          <Button
+            type="submit"
+            className="bg-[#003768] text-white hover:bg-[#FDB813] hover:text-[#003768]"
+          >
+            Post
+          </Button>
+          <Button
+            variant="ghost"
+            type="button"
+            className="text-gray-600 hover:text-[#FDB813]"
+            onClick={onClose}
+          >
             Cancel
           </Button>
         </div>
       </form>
-    </div>
+    </>
   );
 }
