@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpenIcon, HomeIcon, SearchIcon } from "lucide-react";
+import { BookOpenIcon, HomeIcon, SearchIcon, UploadIcon } from "lucide-react";
 
 interface HeaderProps {
   user?: { name: string; email: string; picture: string } | null;
@@ -39,6 +39,13 @@ export default function Header({ user }: HeaderProps) {
             <div className="flex flex-col items-center cursor-pointer">
               <BookOpenIcon className="h-5 w-5" />
               <span className="text-sm mt-1">Consortium</span>
+            </div>
+          </Link>
+
+          <Link href="/uploads">
+            <div className="flex flex-col items-center cursor-pointer">
+              <UploadIcon className="h-5 w-5" />
+              <span className="text-sm mt-1">Upload</span>
             </div>
           </Link>
 
