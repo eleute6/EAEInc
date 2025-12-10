@@ -10,6 +10,7 @@ create table UserInfo (
     emailID varchar(100) primary key,   
     userName varchar(100) not null,     
     department varchar(100),
+    bio varchar (5000),
     currentContributionScore int default 0,
     highestContributionScore int default 0,
     isAdmin boolean default 0, 
