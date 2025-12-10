@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpenIcon, HomeIcon, SearchIcon, UploadIcon } from "lucide-react";
+import { BookOpen, Home, Search, Upload } from "lucide-react";
 
 interface HeaderProps {
   user?: { name: string; email: string; picture: string } | null;
@@ -9,58 +9,69 @@ interface HeaderProps {
 
 export default function Header({ user }: HeaderProps) {
   return (
-    <header className="w-full fixed top-0 left-0 bg-white border-b border-gray-300 z-50 shadow-md">
+    <header className="w-full fixed top-0 left-0 bg-[#002855] text-white z-50 shadow-md">
       <div className="flex items-center p-4 max-w-[1280px] mx-auto">
         {/* Logo */}
-        <Image src="/logo.jpg" alt="Logo" width={100} height={100} />
+        <Link href="/">
+          <Image
+            src="/merrimack-logo.png" // replace with official logo asset
+            alt="Merrimack College Logo"
+            width={120}
+            height={40}
+            priority
+          />
+        </Link>
 
         {/* Search Bar */}
-        <div className="flex-1 mx-4">
-          <form className="flex items-center space-x-2 bg-gray-100 p-2 rounded-md w-full">
-            <SearchIcon className="h-5 text-gray-600" />
+        <div className="flex-1 mx-6">
+          <form className="flex items-center space-x-2 bg-white text-gray-700 p-2 rounded-md w-full shadow-sm">
+            <Search className="h-5 text-gray-500" />
             <input
               type="text"
               placeholder="Search"
-              className="bg-transparent flex-1 outline-none"
+              className="bg-transparent flex-1 outline-none placeholder-gray-400"
             />
           </form>
         </div>
 
         {/* Navigation Links */}
-        <div className="flex space-x-6 items-center">
-          <Link href="/">
-            <div className="flex flex-col items-center cursor-pointer">
-              <HomeIcon className="h-5 w-5" />
-              <span className="text-sm mt-1">Home</span>
-            </div>
+        <nav className="flex space-x-8 items-center font-medium">
+          <Link
+            href="/"
+            className="flex flex-col items-center hover:text-[#FFC72C] transition"
+          >
+            <Home className="h-5 w-5" />
+            <span className="text-xs mt-1">Home</span>
           </Link>
 
-          <Link href="/consortium">
-            <div className="flex flex-col items-center cursor-pointer">
-              <BookOpenIcon className="h-5 w-5" />
-              <span className="text-sm mt-1">Consortium</span>
-            </div>
+          <Link
+            href="/consortium"
+            className="flex flex-col items-center hover:text-[#FFC72C] transition"
+          >
+            <BookOpen className="h-5 w-5" />
+            <span className="text-xs mt-1">Consortium</span>
           </Link>
 
-          <Link href="/uploads">
-            <div className="flex flex-col items-center cursor-pointer">
-              <UploadIcon className="h-5 w-5" />
-              <span className="text-sm mt-1">Upload</span>
-            </div>
+          <Link
+            href="/uploads"
+            className="flex flex-col items-center hover:text-[#FFC72C] transition"
+          >
+            <Upload className="h-5 w-5" />
+            <span className="text-xs mt-1">Upload</span>
           </Link>
 
           {/* User Info */}
           {user && (
-            <div className="ml-4 flex items-center space-x-2">
+            <div className="ml-6 flex items-center space-x-2">
               <img
                 src={user.picture}
                 alt={user.name}
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full border-2 border-[#FFC72C]"
               />
-              <span className="text-sm font-medium">{user.name}</span>
+              <span className="text-sm font-semibold">{user.name}</span>
             </div>
           )}
-        </div>
+        </nav>
       </div>
     </header>
   );

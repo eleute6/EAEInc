@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import { Combobox } from "@headlessui/react";
@@ -17,6 +17,12 @@ export default function UploadPage() {
 
   const [showPopup, setShowPopup] = useState(false);
   const [query, setQuery] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
 
   //Keywords
   const preapprovedKeywords = [
@@ -145,20 +151,23 @@ export default function UploadPage() {
   }, [showPopup]);
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800 border-b pb-2">
+    <div
+      className="mx-auto p-8 lg:p-10 space-y-6 bg-white rounded-lg shadow-md 
+                max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl"
+    >
+      <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
         Upload Research
       </h1>
-      <p className="text-red-600 font-semibold">
-        By choosing to upload to the Merrimack College Community Research Page
+      <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">
+        By choosing to upload to the Merrimack College Community Research Page,
         you give permission for other users to view and download your work.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* First/Last Name */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="block text-sm font-medium text-gray-700">
-            First Name <span className="text-red-500">*</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <label className="block text-sm font-semibold text-[#002855]">
+            First Name <span className="text-[#FFC72C]">*</span>
             <input
               type="text"
               name="firstName"
@@ -166,12 +175,12 @@ export default function UploadPage() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, firstName: e.target.value }))
               }
-              className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
               required
             />
           </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Last Name <span className="text-red-500">*</span>
+          <label className="block text-sm font-semibold text-[#002855]">
+            Last Name <span className="text-[#FFC72C]">*</span>
             <input
               type="text"
               name="lastName"
@@ -179,15 +188,15 @@ export default function UploadPage() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, lastName: e.target.value }))
               }
-              className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
               required
             />
           </label>
         </div>
 
         {/* Email */}
-        <label className="block text-sm font-medium text-gray-700">
-          Email Address <span className="text-red-500">*</span>
+        <label className="block text-sm font-semibold text-[#002855]">
+          Email Address <span className="text-[#FFC72C]">*</span>
           <input
             type="email"
             name="email"
@@ -195,21 +204,21 @@ export default function UploadPage() {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, email: e.target.value }))
             }
-            className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
             required
           />
         </label>
 
         {/* Description */}
-        <label className="block text-sm font-medium text-gray-700">
-          Brief Description <span className="text-red-500">*</span>
+        <label className="block text-sm font-semibold text-[#002855]">
+          Brief Description <span className="text-[#FFC72C]">*</span>
           <textarea
             name="description"
             value={formData.description}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
-            className="mt-1 w-full border rounded-md px-4 py-2 shadow-sm"
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
             rows={4}
             required
           />
@@ -217,13 +226,12 @@ export default function UploadPage() {
 
         {/* Keyword Dropdown */}
         <div>
-          <p className="font-semibold mb-2">
-            Select Keywords <span className="text-red-500">*</span>
+          <p className="font-semibold text-[#002855] mb-2">
+            Select Keywords <span className="text-[#FFC72C]">*</span>
           </p>
           <Combobox
             value={formData.keywords}
             onChange={(selected) => {
-              // enforce max of 5
               if (selected.length <= 5) {
                 setFormData((prev) => ({ ...prev, keywords: selected }));
               }
@@ -232,7 +240,7 @@ export default function UploadPage() {
           >
             <div className="relative">
               <Combobox.Input
-                className="w-full border rounded-md px-4 py-2 shadow-sm"
+                className="w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
                 onChange={(event) => setQuery(event.target.value)}
                 displayValue={(keywords: string[]) => keywords.join(", ")}
                 placeholder="Search or select up to 5 keywords..."
@@ -257,7 +265,7 @@ export default function UploadPage() {
                         disabled
                           ? "text-gray-400 cursor-not-allowed"
                           : active
-                          ? "bg-blue-600 text-white"
+                          ? "bg-[#002855] text-white"
                           : "text-gray-900"
                       }`
                     }
@@ -277,30 +285,33 @@ export default function UploadPage() {
 
         {/* File Upload */}
         <div>
-          <p className="block text-sm font-medium text-gray-700 mb-1">
-            Upload File (PDF only) <span className="text-red-500">*</span>
+          <p className="block text-sm font-semibold text-[#002855] mb-1">
+            Upload File (PDF only) <span className="text-[#FFC72C]">*</span>
           </p>
-          <label className="inline-block">
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={handleFileUpload}
-              className="hidden"
-              required
-            />
-            <Button type="button" variant="default">
-              <span>Select File</span>
-            </Button>
-          </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf"
+            onChange={handleFileUpload} // <-- still needed!
+            className="hidden"
+            required
+          />
+          <Button
+            type="button"
+            onClick={handleButtonClick} // <-- new trigger
+            className="bg-[#002855] text-white hover:bg-[#FFC72C] hover:text-[#002855] transition font-semibold"
+          >
+            Select File
+          </Button>
 
           {formData.file && (
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-[#002855] mt-2">
               Attached:{" "}
               <a
                 href={URL.createObjectURL(formData.file)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-[#002855] underline hover:text-[#FFC72C]"
               >
                 {formData.file.name}
               </a>
@@ -308,7 +319,10 @@ export default function UploadPage() {
           )}
         </div>
 
-        <Button type="submit" variant="default">
+        <Button
+          type="submit"
+          className="bg-[#002855] text-white hover:bg-[#FFC72C] hover:text-[#002855] transition font-semibold px-6 py-2 rounded-md"
+        >
           Submit Upload
         </Button>
       </form>
@@ -316,20 +330,35 @@ export default function UploadPage() {
       {/* Popup Modal */}
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 transition-opacity duration-300">
-          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full transform transition-all duration-300 scale-100">
+          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full transform transition-all duration-300 scale-100 border-t-4 border-[#FFC72C]">
             {/* Close button */}
             <button
               onClick={() => setShowPopup(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              className="absolute top-2 right-2 text-gray-500 hover:text-[#002855] transition"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <h2 className="text-xl font-bold mb-4">Thank you for submitting</h2>
+            <h2 className="text-xl font-bold mb-4 text-[#002855]">
+              Thank you for submitting
+            </h2>
             <p className="text-gray-700">
-              After approval, your work will be available in the instrument
-              consortium.
+              After approval, your work will be available in the{" "}
+              <span className="font-semibold text-[#002855]">
+                Instrument Consortium
+              </span>
+              .
             </p>
+
+            {/* Optional action button */}
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="bg-[#002855] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#FFC72C] hover:text-[#002855] transition"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

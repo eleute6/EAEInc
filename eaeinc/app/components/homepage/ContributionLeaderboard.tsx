@@ -12,8 +12,8 @@ function ContributionLeaderboard() {
   ];
 
   return (
-    <div className="flex flex-col justify-center items-center bg-white mr-6 rounded-lg border py-4 px-6 space-y-2">
-      <h2 className="text-lg font-semibold text-gray-800 mb-2">
+    <div className="flex flex-col bg-white mr-6 rounded-lg border border-[#003768]/20 py-4 px-6 space-y-4 shadow-md">
+      <h2 className="text-lg font-bold text-[#003768] border-b pb-2">
         Contribution Leaderboard
       </h2>
 
@@ -28,7 +28,7 @@ function ContributionLeaderboard() {
                 {leader.imageUrl ? (
                   <AvatarImage src={leader.imageUrl} />
                 ) : (
-                  <AvatarFallback className="bg-blue-500 text-white font-bold">
+                  <AvatarFallback className="bg-[#003768] text-white font-bold">
                     {leader.name
                       .split(" ")
                       .map((n) => n[0])
@@ -37,7 +37,7 @@ function ContributionLeaderboard() {
                 )}
               </Avatar>
 
-              <span className="font-medium text-gray-700">{leader.name}</span>
+              <span className="font-medium text-[#003768]">{leader.name}</span>
             </div>
 
             <span className="text-sm font-semibold text-gray-600">
