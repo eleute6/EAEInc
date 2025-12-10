@@ -13,7 +13,6 @@ export interface Post {
     firstName: string;
     lastName: string;
     imageUrl: string;
-    //NEW: email field added to user object.
     email: string;
   };
 }
@@ -36,13 +35,11 @@ export default function PostForum({ user }: PostForumProps) {
 
   const firstName = user.name.split(" ")[0];
   const lastName = user.name.split(" ")[1] || "";
-  // NEW: Need to retrieve email from user.
   const email = user.email;
   const userObj = { firstName, lastName, imageUrl: user.picture, email };
 
-  // Load posts from backend on load
   useEffect(() => {
-    fetch("/api/posts") // <-- changed from localhost:5500
+    fetch("/api/posts")
       .then((res) => res.json())
       .then((data) => setPosts(data))
       .catch((err) => console.error("Failed to fetch posts:", err));
@@ -52,13 +49,12 @@ export default function PostForum({ user }: PostForumProps) {
     const text = (formData.get("postInput") as string)?.trim();
     if (!text) return alert("Post input required");
 
-    // Optional image included
     const body: {
       text: string;
       firstName: string;
       lastName: string;
       imageUrl: string;
-      image?: string; // <-- optional
+      image?: string;
     } = {
       text,
       firstName: userObj.firstName,
@@ -69,7 +65,7 @@ export default function PostForum({ user }: PostForumProps) {
     if (fileInputRef.current?.files?.[0]) {
       const file = fileInputRef.current.files[0];
       const base64 = await fileToBase64(file);
-      body.image = base64; // only added if image exists
+      body.image = base64;
     }
 
     const response = await fetch("/api/posts", {
@@ -78,9 +74,7 @@ export default function PostForum({ user }: PostForumProps) {
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
-      return alert("Failed to create post.");
-    }
+    if (!response.ok) return alert("Failed to create post.");
 
     const newPost = await response.json();
     setPosts((prev) => [...prev, newPost]);
@@ -90,7 +84,6 @@ export default function PostForum({ user }: PostForumProps) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Helper to convert file to base64
   const fileToBase64 = (file: File) =>
     new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -132,7 +125,7 @@ export default function PostForum({ user }: PostForumProps) {
               {userObj.imageUrl ? (
                 <AvatarImage src={userObj.imageUrl} />
               ) : (
-                <AvatarFallback>
+                <AvatarFallback className="bg-[#003768] text-white font-bold">
                   {userObj.firstName[0]}
                   {userObj.lastName[0]}
                 </AvatarFallback>
@@ -143,7 +136,7 @@ export default function PostForum({ user }: PostForumProps) {
               type="text"
               name="postInput"
               placeholder="Start writing a post..."
-              className="flex-1 outline-none rounded-full py-3 px-4 border bg-white shadow-sm"
+              className="flex-1 outline-none rounded-full py-3 px-4 border border-[#003768] focus:ring-2 focus:ring-[#FDB813] shadow-sm"
             />
           </div>
 
@@ -159,26 +152,36 @@ export default function PostForum({ user }: PostForumProps) {
           {preview && (
             <img
               src={preview}
-              className="w-full max-h-64 object-cover rounded-lg"
+              className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
             />
           )}
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" onClick={() => fileInputRef.current?.click()}>
-              <ImageIcon size={16} /> {preview ? "Change" : "Add"} image
+            <Button
+              type="button"
+              className="bg-[#003768] text-white hover:bg-[#FDB813] hover:text-[#003768]"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <ImageIcon size={16} /> {preview ? "Change" : "Add"} Image
             </Button>
 
             {preview && (
               <Button
                 variant="outline"
                 type="button"
+                className="border-[#003768] text-[#003768] hover:bg-[#FDB813] hover:text-white"
                 onClick={handleRemoveImage}
               >
                 <XIcon size={16} /> Remove
               </Button>
             )}
 
-            <Button type="submit">Post</Button>
+            <Button
+              type="submit"
+              className="bg-[#003768] text-white hover:bg-[#FDB813] hover:text-[#003768]"
+            >
+              Post
+            </Button>
           </div>
         </form>
       </div>
@@ -189,20 +192,20 @@ export default function PostForum({ user }: PostForumProps) {
           {posts.map((post) => (
             <div
               key={post.id}
-              className="bg-white p-4 rounded-lg shadow-sm border"
+              className="bg-white p-4 rounded-lg shadow-sm border border-[#003768]/20"
             >
               <div className="flex items-center space-x-3 mb-2">
                 <Avatar className="w-10 h-10">
                   {post.user.imageUrl ? (
                     <AvatarImage src={post.user.imageUrl} />
                   ) : (
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-[#003768] text-white font-bold">
                       {post.user.firstName[0]}
                       {post.user.lastName[0]}
                     </AvatarFallback>
                   )}
                 </Avatar>
-                <p className="font-semibold">
+                <p className="font-semibold text-[#003768]">
                   {post.user.firstName} {post.user.lastName}
                 </p>
               </div>
@@ -211,7 +214,7 @@ export default function PostForum({ user }: PostForumProps) {
               {post.image && (
                 <img
                   src={`http://localhost:5500/uploads/${post.image}`}
-                  className="w-full max-h-64 object-cover rounded-lg"
+                  className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
                 />
               )}
             </div>
