@@ -237,23 +237,18 @@ export async function updateContributionScore(email: string, score: number) {
 
 /* FORUM POSTS */
 
-/* SENDPOST */
-/*  Function used to send data from a post
-    and then update the list of forum posts.    */
-export async function sendPost(post: Post) {
-  // STEP 1: Extract data from post object
-  const text = post.text;
-  const image = post.image;
-  const email = post.user.email;
-
-  // STEP 2: Insert into Forum table
+export async function sendPost(post: Post): Promise<Post | null> {
   try {
     await db.execute(
       "INSERT INTO Forum (body, imageURL, emailID) VALUES (?, ?, ?)",
-      [text, image, email]
+      [post.text, post.image, post.user.email]
     );
+
+    // Return the same post object so the UI can display it immediately
+    return post;
   } catch (err: any) {
-    console.error(err);
+    console.error("Error inserting post:", err);
+    return null;
   }
 }
 

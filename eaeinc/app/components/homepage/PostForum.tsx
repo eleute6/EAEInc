@@ -24,7 +24,6 @@ interface PostForumProps {
     email: string;
     picture: string;
   };
-
 }
 
 export default function PostForum({ user }: PostForumProps) {
@@ -46,73 +45,43 @@ export default function PostForum({ user }: PostForumProps) {
       .then((res) => res.json())
       //.then((data) => setPosts(data))
       .catch((err) => console.error("Failed to fetch posts:", err)); */
-      async function loadPosts() {
-        const newPosts: Post[] = await fetchPosts();
-        setPosts(newPosts);
-      }
-      loadPosts();
+    async function loadPosts() {
+      const newPosts: Post[] = await fetchPosts();
+      setPosts(newPosts);
+    }
+    loadPosts();
   }, []);
 
   const handlePostAction = async (formData: FormData) => {
-    // CURRENT BELIEF: This is where the call to post should be made?
-
     const text = (formData.get("postInput") as string)?.trim();
     if (!text) return alert("Post input required");
 
-    const base64 = null;
+    let base64: string | null = null;
     if (fileInputRef.current?.files?.[0]) {
       const file = fileInputRef.current.files[0];
-      const base64 = await fileToBase64(file);
+      base64 = await fileToBase64(file);
     }
 
     const newPost: Post = {
-      id: Date.now(), // Temporary ID;
-      text: (formData.get("postInput") as string),
+      id: Date.now(), // temporary ID until DB assigns one
+      text,
       image: base64,
       user: {
         firstName: userObj.firstName,
         lastName: userObj.lastName,
         imageUrl: userObj.imageUrl,
         email: userObj.email,
-      }
-    }
-
-    sendPost(newPost);
-    /*
-    const body: {
-      text: string;
-      firstName: string;
-      lastName: string;
-      imageUrl: string;
-      image?: string;
-    } = {
-      text,
-      firstName: userObj.firstName,
-      lastName: userObj.lastName,
-      imageUrl: userObj.imageUrl,
+      },
     };
 
-    if (fileInputRef.current?.files?.[0]) {
-      const file = fileInputRef.current.files[0];
-      const base64 = await fileToBase64(file);
-      body.image = base64;
+    const inserted = await sendPost(newPost);
+    if (inserted) {
+      setPosts((prev) => [inserted, ...prev]); // show immediately at top
     }
-
-    const response = await fetch("/api/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }); 
-
-    if (!response.ok) return alert("Failed to create post."); 
-
-    const newPost = await response.json(); 
-    //setPosts((prev) => [...prev, newPost]);
-    */
 
     ref.current?.reset();
     setPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = ""; 
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const fileToBase64 = (file: File) =>
@@ -244,7 +213,7 @@ export default function PostForum({ user }: PostForumProps) {
 
               {post.image && (
                 <img
-                  src={`http://localhost:5500/uploads/${post.image}`} // ? What's happening here? 
+                  src={`http://localhost:5500/uploads/${post.image}`} // ? What's happening here?
                   className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
                 />
               )}
