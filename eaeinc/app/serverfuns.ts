@@ -47,22 +47,34 @@ interface Comments {
     based on their email address for the mini profile.  */
 export async function fetchInfoSmall(email: string) {
   try {
-    // STEP 1: Query database for basic user info
     const [rows] = await db.execute(
       "SELECT userName, pictureURL FROM UserInfo WHERE emailID = ?",
       [email]
     );
 
-    // STEP 2: Make the User object for use.
+    if ((rows as any[]).length === 0) {
+      console.log("No user found for:", email);
+      return {
+        name: "Unknown User",
+        picture: "",
+        email,
+      };
+    }
+
+    const row = (rows as any[])[0];
     const user: User = {
-      name: (rows as any[])[0].userName || "Unknown User",
-      picture: (rows as any[])[0].pictureURL || "",
-      email: email,
+      name: row.userName || "Unknown User",
+      picture: row.pictureURL || "",
+      email,
     };
     return user;
   } catch (err: any) {
-    //In the case of failure, report back the error and set status.
-    console.error(err);
+    console.error("Error in fetchInfoSmall:", err);
+    return {
+      name: "Error",
+      picture: "",
+      email,
+    };
   }
 }
 
@@ -71,29 +83,49 @@ export async function fetchInfoSmall(email: string) {
     based on their email address for the profile page.  */
 export async function fetchInfoFull(email: string) {
   try {
-    // STEP 1: Query database for full user info
     const [rows] = await db.execute(
-      "SELECT userName, department, currentContributionScore, highestContributionScore, isAdmin, pictureURL FROM UserInfo WHERE emailID = ?",
+      "SELECT userName, department, currentContributionScore, highestContributionScore, isAdmin, pictureURL, bio FROM UserInfo WHERE emailID = ?",
       [email]
     );
 
-    // STEP 2: Make the User object for use.
+    if ((rows as any[]).length === 0) {
+      console.log("No full info found for:", email);
+      return {
+        name: "Currently Empty",
+        picture: "",
+        bio: "No Bio Set",
+        email,
+        department: "Currently Empty",
+        currentContributionScore: 0,
+        highestContributionScore: 0,
+        isAdmin: false,
+      };
+    }
+
+    const row = (rows as any[])[0];
     const user: UserFull = {
-      name: (rows as any[])[0].userName || "Currently Empty",
-      picture: (rows as any[])[0].pictureURL || "",
-      bio: (rows as any[])[0].bio || "No Bio Set",
-      email: email,
-      department: (rows as any[])[0].department || "Currently Empty",
-      currentContributionScore:
-        (rows as any[])[0].currentContributionScore || 0,
-      highestContributionScore:
-        (rows as any[])[0].highestContributionScore || 0,
-      isAdmin: (rows as any[])[0].isAdmin || false,
+      name: row.userName || "Currently Empty",
+      picture: row.pictureURL || "",
+      bio: row.bio || "No Bio Set",
+      email,
+      department: row.department || "Currently Empty",
+      currentContributionScore: row.currentContributionScore || 0,
+      highestContributionScore: row.highestContributionScore || 0,
+      isAdmin: row.isAdmin || false,
     };
     return user;
   } catch (err: any) {
-    //Usual error catching.
-    console.error(err);
+    console.error("Error in fetchInfoFull:", err);
+    return {
+      name: "Error",
+      picture: "",
+      bio: "Error",
+      email,
+      department: "Error",
+      currentContributionScore: 0,
+      highestContributionScore: 0,
+      isAdmin: false,
+    };
   }
 }
 
@@ -106,16 +138,19 @@ export async function initialUserInfo(
   picture: string | null,
   admin: boolean
 ) {
-  // STEP 1: Check if User Already Exists
-  const [rows] = await db.execute(
-    "SELECT userName, pictureURL FROM UserInfo WHERE emailID = ?",
-    [email]
-  );
-  const existing = (rows as any[])[0];
+  console.log("initialUserInfo called with:", { name, email, picture, admin });
 
-  // STEP 2: If New User, Insert into Database
-  if (!existing) {
-    try {
+  try {
+    const [rows] = await db.execute(
+      "SELECT userName, pictureURL FROM UserInfo WHERE emailID = ?",
+      [email]
+    );
+    const existing = (rows as any[]).length > 0 ? (rows as any[])[0] : null;
+
+    if (!existing) {
+      console.log("No existing user, inserting new:", email);
+
+      // ✅ Use Google image if provided, otherwise fallback
       const finalPicture =
         picture && picture.trim() !== "" ? picture : "/default-avatar.png";
 
@@ -134,18 +169,18 @@ export async function initialUserInfo(
           admin,
         ]
       );
-    } catch (err: any) {
-      console.error("Error inserting user:", err);
-    }
-  } else {
-    // STEP 3: If existing row has placeholder values, update them
-    try {
+      console.log("Inserted new user:", email);
+    } else {
+      console.log("Existing user found:", existing);
+
       const needsUpdate =
         existing.userName === "New User" ||
         !existing.pictureURL ||
         existing.pictureURL.trim() === "";
 
       if (needsUpdate) {
+        console.log("Updating existing user:", email);
+
         const finalPicture =
           picture && picture.trim() !== "" ? picture : "/default-avatar.png";
 
@@ -153,10 +188,11 @@ export async function initialUserInfo(
           "UPDATE UserInfo SET userName = ?, pictureURL = ? WHERE emailID = ?",
           [name, finalPicture, email]
         );
+        console.log("Updated existing user:", email);
       }
-    } catch (err: any) {
-      console.error("Error updating user:", err);
     }
+  } catch (err: any) {
+    console.error("Error in initialUserInfo:", err);
   }
 }
 
