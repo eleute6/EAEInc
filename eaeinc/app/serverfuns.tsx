@@ -8,8 +8,8 @@
 */
 'use server'
 import type { Post } from "@/app/components/homepage/PostForum"
-import type { User } from "@/components/UserInformation"
-import type { ConsortiumItem } from "./components/consortium/InstrumentConsortium"
+import type { User } from "./components/homepage/userinformation/UserInformation"
+import type { Upload } from "./components/consortium/InstrumentConsortium"
 import { db } from "@/app/database"
 import { NextResponse } from "next/server";
 
@@ -62,7 +62,7 @@ export async function fetchInfoSmall(email: string) {
         return user;
     } //In the case of failure, report back the error and set status.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -90,7 +90,7 @@ export async function fetchInfoFull(email: string) {
         return user;
     } //Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -114,7 +114,7 @@ export async function initialUserInfo(name: string, email: string, picture: stri
         }
         // Usual error catching.
         catch (err: any) {
-            return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+            console.error(err);
         }
     }
 }
@@ -139,7 +139,7 @@ export async function updateUserInfo(fData: FormData) {
     }
     // Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -155,7 +155,7 @@ export async function updateContributionScore(email: string, score: number) {
     }
     // Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -182,7 +182,7 @@ export async function sendPost(post: Post) {
         );
      } //Usual error catching.
      catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
      }
 }
 
@@ -205,7 +205,7 @@ export async function sendComment(fData: FormData) {
     }
     // Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -233,7 +233,8 @@ export async function fetchPosts() {
         return posts;
     } //Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
+        return [];
     }
 }
 
@@ -258,7 +259,8 @@ export async function fetchComments(forumID: number) {
         return comments;
     } //Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
+        return [];
     }
 }
 
@@ -299,7 +301,7 @@ export async function deletePost(postID: number) {
         );
     } //Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -315,7 +317,7 @@ export async function deleteComment(commentID: number) {
         );
     } //Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -343,7 +345,7 @@ export async function fetchConsortiumAll() {
         return instruments; 
     }
     catch (err: any) { //Usual error catching.
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
@@ -446,14 +448,14 @@ export async function deleteInstrument(instrumentID: number) {
         );
     } //Usual error catching.
     catch (err: any) {
-        return NextResponse.json({ status: 'error', message: err.message }, { status: 500 });
+        console.error(err);
     }
 }
 
 /* UPLOADFILE */
 /*  Function used to upload a file to
     the database for consortium members.    */
-export async function uploadFile(item: ConsortiumItem, file: File) {
+export async function uploadFile(item: Upload, file: File) {
     //TO DO ::  Need to check if files can be sent directly to local storage or if
     //          they need to be routed through the backend first.
 }

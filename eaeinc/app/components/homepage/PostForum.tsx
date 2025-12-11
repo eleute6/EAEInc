@@ -4,6 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import React, { useRef, useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { ImageIcon, XIcon } from "lucide-react";
+import { sendPost, fetchPosts } from "../../serverfuns";
 
 export interface Post {
   id: number;
@@ -23,6 +24,7 @@ interface PostForumProps {
     email: string;
     picture: string;
   };
+
 }
 
 export default function PostForum({ user }: PostForumProps) {
@@ -39,16 +41,44 @@ export default function PostForum({ user }: PostForumProps) {
   const userObj = { firstName, lastName, imageUrl: user.picture, email };
 
   useEffect(() => {
-    fetch("/api/posts")
+    // CURRENT BELIEF: This is where posts are initially called for display?
+    /*fetch("/api/posts")
       .then((res) => res.json())
-      .then((data) => setPosts(data))
-      .catch((err) => console.error("Failed to fetch posts:", err));
+      //.then((data) => setPosts(data))
+      .catch((err) => console.error("Failed to fetch posts:", err)); */
+      async function loadPosts() {
+        const newPosts: Post[] = await fetchPosts();
+        setPosts(newPosts);
+      }
+      loadPosts();
   }, []);
 
   const handlePostAction = async (formData: FormData) => {
+    // CURRENT BELIEF: This is where the call to post should be made?
+
     const text = (formData.get("postInput") as string)?.trim();
     if (!text) return alert("Post input required");
 
+    const base64 = null;
+    if (fileInputRef.current?.files?.[0]) {
+      const file = fileInputRef.current.files[0];
+      const base64 = await fileToBase64(file);
+    }
+
+    const newPost: Post = {
+      id: Date.now(), // Temporary ID;
+      text: (formData.get("postInput") as string),
+      image: base64,
+      user: {
+        firstName: userObj.firstName,
+        lastName: userObj.lastName,
+        imageUrl: userObj.imageUrl,
+        email: userObj.email,
+      }
+    }
+
+    sendPost(newPost);
+    /*
     const body: {
       text: string;
       firstName: string;
@@ -72,16 +102,17 @@ export default function PostForum({ user }: PostForumProps) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-    });
+    }); 
 
-    if (!response.ok) return alert("Failed to create post.");
+    if (!response.ok) return alert("Failed to create post."); 
 
-    const newPost = await response.json();
-    setPosts((prev) => [...prev, newPost]);
+    const newPost = await response.json(); 
+    //setPosts((prev) => [...prev, newPost]);
+    */
 
     ref.current?.reset();
     setPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = ""; 
   };
 
   const fileToBase64 = (file: File) =>
@@ -213,7 +244,7 @@ export default function PostForum({ user }: PostForumProps) {
 
               {post.image && (
                 <img
-                  src={`http://localhost:5500/uploads/${post.image}`}
+                  src={`http://localhost:5500/uploads/${post.image}`} // ? What's happening here? 
                   className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
                 />
               )}

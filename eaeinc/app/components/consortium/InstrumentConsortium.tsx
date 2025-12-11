@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
-interface Upload {
+export interface Upload {
   id: number;
   title: string;
   keywords: string[];
