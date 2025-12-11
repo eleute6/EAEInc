@@ -1,29 +1,43 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { initialUserInfo } from "@/app/serverfuns"; // adjust path if needed
 
 const handler = NextAuth({
-    providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            authorization: { params: { prompt: "select_account" } },
-            httpOptions: {
-              timeout: 40000,
-            },
-        }),
-    ],
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: { params: { prompt: "select_account" } },
+      httpOptions: {
+        timeout: 40000,
+      },
+    }),
+  ],
 
-    session: {
-        strategy: "jwt",
+  session: {
+    strategy: "jwt",
+  },
+
+  callbacks: {
+    // When a user signs in, insert them into UserInfo if not already there
+    async signIn({ user }) {
+      try {
+        if (user?.email) {
+          await initialUserInfo(
+            user.name || "Unknown User",
+            user.email,
+            user.image || "",
+            false // set to true if you want to mark admins
+          );
+        }
+      } catch (err) {
+        console.error("Error inserting user into UserInfo:", err);
+      }
+      return true;
     },
 
-    callbacks: {
-        // CALLBACK FROM SIGN-IN TO VERIFY
-        async signIn({ account }) {
-          return true;
-},
-        //CALLBACK TO STORE TOKEN IN SESSION
-        async jwt({ token, account, user }) {
+    // Store token in JWT
+    async jwt({ token, account, user }) {
       if (account?.id_token) {
         token.idToken = account.id_token;
       }
@@ -37,8 +51,9 @@ const handler = NextAuth({
       return token;
     },
 
-        async session({ session }) {
-        try {
+    // Attach user info to session
+    async session({ session }) {
+      try {
         if (!session.user?.email) return session;
 
         const userRes = await fetch(

@@ -51,16 +51,12 @@ create table InstrumentTag (
 create table Forum (
     forumID int auto_increment primary key,
     body text not null,
-    emailID varchar(100),
-    userName varchar(100),
-    pictureURL varchar(500),
+    emailID varchar(100) not null,
+    imageURL varchar(500),              -- image attached to the post
     likeCount int default 0,
-    imageURL varchar(500),
     uploadedAt timestamp default current_timestamp,
     isDeleted boolean default 0,
-    foreign key (emailID) references UserInfo(emailID),
-    foreign key (userName) references UserInfo(userName),
-    foreign key (pictureURL) references UserInfo(pictureURL)
+    foreign key (emailID) references UserInfo(emailID)
 );
 
 -- Forum comment table
