@@ -13,25 +13,14 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Check if user exists
     const [rows] = await db.execute(
       "SELECT userName, emailID, pictureURL, department, bio FROM UserInfo WHERE emailID = ?",
       [email]
     );
 
     if ((rows as any[]).length === 0) {
-      // If not found, insert a new user with defaults
-      await db.execute(
-        "INSERT INTO UserInfo (userName, emailID, pictureURL, bio, department, currentContributionScore, highestContributionScore, isAdmin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        ["New User", email, "", "Not Specified", "Not Specified", 0, 0, false]
-      );
-
-      return NextResponse.json({
-        status: "created",
-        name: "New User",
-        email,
-        image: "",
-      });
+      // User not found — just report that, don't insert placeholders here
+      return NextResponse.json({ status: "not_found" }, { status: 404 });
     }
 
     const user = (rows as any[])[0];

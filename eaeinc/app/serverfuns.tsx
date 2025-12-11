@@ -103,26 +103,59 @@ export async function fetchInfoFull(email: string) {
 export async function initialUserInfo(
   name: string,
   email: string,
-  picture: string,
+  picture: string | null,
   admin: boolean
 ) {
-  /* STEP 1: Check if User Already Exists */
+  // STEP 1: Check if User Already Exists
   const [rows] = await db.execute(
-    "SELECT COUNT(*) as count FROM UserInfo WHERE emailID = ?",
+    "SELECT userName, pictureURL FROM UserInfo WHERE emailID = ?",
     [email]
   );
-  const count = (rows as any[])[0].count || 0;
+  const existing = (rows as any[])[0];
 
-  /* STEP 2: If New User, Insert into Database */
-  if (count === 0) {
+  // STEP 2: If New User, Insert into Database
+  if (!existing) {
     try {
+      const finalPicture =
+        picture && picture.trim() !== "" ? picture : "/default-avatar.png";
+
       await db.execute(
-        "INSERT INTO UserInfo (userName, emailID, pictureURL, bio, department, currentContributionScore, highestContributionScore, isAdmin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [name, email, picture, "Not Specified", "Not Specified", 0, 0, admin]
+        `INSERT INTO UserInfo 
+          (userName, emailID, pictureURL, bio, department, currentContributionScore, highestContributionScore, isAdmin) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          name,
+          email,
+          finalPicture,
+          "Not Specified",
+          "Not Specified",
+          0,
+          0,
+          admin,
+        ]
       );
     } catch (err: any) {
-      // Usual error catching.
-      console.error(err);
+      console.error("Error inserting user:", err);
+    }
+  } else {
+    // STEP 3: If existing row has placeholder values, update them
+    try {
+      const needsUpdate =
+        existing.userName === "New User" ||
+        !existing.pictureURL ||
+        existing.pictureURL.trim() === "";
+
+      if (needsUpdate) {
+        const finalPicture =
+          picture && picture.trim() !== "" ? picture : "/default-avatar.png";
+
+        await db.execute(
+          "UPDATE UserInfo SET userName = ?, pictureURL = ? WHERE emailID = ?",
+          [name, finalPicture, email]
+        );
+      }
+    } catch (err: any) {
+      console.error("Error updating user:", err);
     }
   }
 }
