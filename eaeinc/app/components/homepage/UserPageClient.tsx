@@ -1,6 +1,14 @@
+/* DO NOT USE */
+
+
+
+
+
+
+'use client';
 import Header from "@/app/components/Header";
 import UserInformation from "./userinformation/UserInformation";
-import PostForum from "./PostForum";
+import PostForum, { Post } from "./PostForum";
 import HelpfulResources from "./HelpfulResources";
 import ContributionLeaderboard from "./ContributionLeaderboard";
 import UpcomingEvents from "./UpcomingEvents";
@@ -14,10 +22,11 @@ interface User {
 
 interface Props {
   user: User;
+  posts: Post[];
 }
 
-export default  function UserPage({ user }: Props) {
-  return (
+export default function UserPageClient({ user, posts }: Props) {
+return (
     <>
       {/* Header at the top */}
       <Header user={user} />

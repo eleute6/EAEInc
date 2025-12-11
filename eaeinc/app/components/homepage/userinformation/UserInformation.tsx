@@ -4,7 +4,7 @@ import { Button } from "../../ui/button";
 import PostCreator from "./PostCreator";
 import EditProfile from "./EditProfile";
 
-interface User {
+export interface User {
   name: string;
   email: string;
   picture: string;
