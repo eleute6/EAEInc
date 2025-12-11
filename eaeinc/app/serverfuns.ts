@@ -236,7 +236,6 @@ export async function updateContributionScore(email: string, score: number) {
 }
 
 /* FORUM POSTS */
-
 export async function sendPost(post: Post): Promise<Post | null> {
   try {
     await db.execute(
@@ -244,7 +243,6 @@ export async function sendPost(post: Post): Promise<Post | null> {
       [post.text, post.image, post.user.email]
     );
 
-    // Return the same post object so the UI can display it immediately
     return post;
   } catch (err: any) {
     console.error("Error inserting post:", err);

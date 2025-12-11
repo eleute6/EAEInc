@@ -56,16 +56,29 @@ export default function PostForum({ user }: PostForumProps) {
     const text = (formData.get("postInput") as string)?.trim();
     if (!text) return alert("Post input required");
 
-    let base64: string | null = null;
+    let filename: string | null = null;
     if (fileInputRef.current?.files?.[0]) {
       const file = fileInputRef.current.files[0];
-      base64 = await fileToBase64(file);
+      const uploadForm = new FormData();
+      uploadForm.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadForm,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        filename = data.filename;
+      } else {
+        return alert("Image upload failed");
+      }
     }
 
     const newPost: Post = {
-      id: Date.now(), // temporary ID until DB assigns one
+      id: Date.now(),
       text,
-      image: base64,
+      image: filename, // ✅ store filename, not base64
       user: {
         firstName: userObj.firstName,
         lastName: userObj.lastName,
@@ -76,21 +89,13 @@ export default function PostForum({ user }: PostForumProps) {
 
     const inserted = await sendPost(newPost);
     if (inserted) {
-      setPosts((prev) => [inserted, ...prev]); // show immediately at top
+      setPosts((prev) => [inserted, ...prev]);
     }
 
     ref.current?.reset();
     setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
-
-  const fileToBase64 = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -213,7 +218,7 @@ export default function PostForum({ user }: PostForumProps) {
 
               {post.image && (
                 <img
-                  src={`http://localhost:5500/uploads/${post.image}`} // ? What's happening here?
+                  src={`/uploads/${post.image}`} // ✅ loads from public/uploads
                   className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
                 />
               )}
