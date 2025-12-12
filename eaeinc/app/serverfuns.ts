@@ -709,9 +709,10 @@ export async function createEvent(
 export async function fetchEvents() {
   try {
     const [rows] = await db.execute(
-      `SELECT eventID, title, location, startDateTime, endDateTime 
-       FROM UpcomingEvents 
-       ORDER BY startDateTime ASC`
+      `SELECT eventID, title, location, startDateTime, endDateTime
+        FROM UpcomingEvents
+        WHERE startDateTime >= NOW()
+        ORDER BY startDateTime ASC;`
     );
     return rows as any[];
   } catch (err: any) {
