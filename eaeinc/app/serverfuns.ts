@@ -680,3 +680,42 @@ export async function addComment(postId: number, text: string, email: string) {
     return null;
   }
 }
+
+/* CREATEEVENT */
+/*  Function used by AdminPage to insert a new event into UpcomingEvents table. */
+export async function createEvent(
+  title: string,
+  description: string,
+  emailID: string,
+  startDateTime: string,
+  endDateTime: string,
+  location: string
+) {
+  try {
+    await db.execute(
+      `INSERT INTO UpcomingEvents 
+        (title, eventDescription, emailID, startDateTime, endDateTime, location) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [title, description, emailID, startDateTime, endDateTime, location]
+    );
+    console.log("Event created:", title);
+  } catch (err: any) {
+    console.error("Error in createEvent:", err);
+  }
+}
+
+/* FETCHEVENTS */
+/*  Function used by UpcomingEvents component to retrieve all events from DB. */
+export async function fetchEvents() {
+  try {
+    const [rows] = await db.execute(
+      `SELECT eventID, title, location, startDateTime, endDateTime 
+       FROM UpcomingEvents 
+       ORDER BY startDateTime ASC`
+    );
+    return rows as any[];
+  } catch (err: any) {
+    console.error("Error in fetchEvents:", err);
+    return [];
+  }
+}

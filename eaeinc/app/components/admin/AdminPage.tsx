@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { CalendarDays, MapPin, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "../ui/button";
+import { createEvent } from "@/app/serverfuns";
+import { useSession } from "next-auth/react";
 
 interface Event {
   title: string;
@@ -20,6 +22,7 @@ interface UploadRequest {
 }
 
 export default function AdminPage() {
+  const { data: session } = useSession(); // <-- use session here
   const [events, setEvents] = useState<Event[]>([]);
   const [newEvent, setNewEvent] = useState<Event>({
     title: "",
@@ -46,9 +49,16 @@ export default function AdminPage() {
     },
   ]);
 
-  const handleEventSubmit = (e: React.FormEvent) => {
+  const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEvents((prev) => [...prev, newEvent]);
+    await createEvent(
+      newEvent.title,
+      "", // description optional
+      session?.user?.email ?? "admin@example.com", // <-- use session user
+      `${newEvent.date} 00:00:00`, // format for MySQL DATETIME
+      `${newEvent.date} 00:00:00`,
+      newEvent.location
+    );
     setNewEvent({ title: "", date: "", location: "" });
   };
 
@@ -85,8 +95,7 @@ export default function AdminPage() {
             required
           />
           <input
-            type="text"
-            placeholder="Event Date"
+            type="date" // use date input for proper format
             value={newEvent.date}
             onChange={(e) =>
               setNewEvent((prev) => ({ ...prev, date: e.target.value }))
