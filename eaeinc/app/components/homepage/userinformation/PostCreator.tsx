@@ -4,6 +4,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "../../ui/avatar";
 import React, { useRef, useState } from "react";
 import { Button } from "../../ui/button";
 import { ImageIcon, XIcon } from "lucide-react";
+import { Post } from "../PostForum";
+import { sendPost } from "../../../serverfuns"; // import same helper used in forum
 
 interface PostCreatorProps {
   user: {
@@ -12,63 +14,67 @@ interface PostCreatorProps {
     picture: string;
   };
   onClose: () => void;
+  onPostCreated?: (newPost: Post) => void;
 }
 
-export default function PostCreator({ user, onClose }: PostCreatorProps) {
+export default function PostCreator({
+  user,
+  onClose,
+  onPostCreated,
+}: PostCreatorProps) {
   const ref = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
   const firstName = user.name.split(" ")[0];
   const lastName = user.name.split(" ")[1] || "";
-  const userObj = { firstName, lastName, imageUrl: user.picture };
+  const email = user.email;
+  const userObj = { firstName, lastName, imageUrl: user.picture, email };
 
   const handlePostAction = async (formData: FormData) => {
     const text = (formData.get("postInput") as string)?.trim();
     if (!text) return alert("Post input required");
 
-    const body: {
-      text: string;
-      firstName: string;
-      lastName: string;
-      imageUrl: string;
-      image?: string;
-    } = {
-      text,
-      firstName: userObj.firstName,
-      lastName: userObj.lastName,
-      imageUrl: userObj.imageUrl,
-    };
-
+    let filename: string | null = null;
     if (fileInputRef.current?.files?.[0]) {
       const file = fileInputRef.current.files[0];
-      const base64 = await fileToBase64(file);
-      body.image = base64;
+      const uploadForm = new FormData();
+      uploadForm.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadForm,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        filename = data.filename;
+      } else {
+        return alert("Image upload failed");
+      }
     }
 
-    const response = await fetch("/api/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const newPost: Post = {
+      id: Date.now(),
+      text,
+      image: filename,
+      user: userObj,
+      likes: 0,
+      likedByUser: false,
+      comments: [],
+    };
 
-    if (!response.ok) {
-      return alert("Failed to create post.");
+    const inserted = await sendPost(newPost);
+    if (inserted) {
+      if (onPostCreated) {
+        onPostCreated(inserted); // notify parent (e.g. PostForum) to update state
+      }
     }
 
+    // reset form
     ref.current?.reset();
     setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     onClose();
   };
-
-  const fileToBase64 = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -17,6 +17,7 @@ import {
   deletePost,
   deleteComment,
 } from "../../serverfuns";
+import PostCreator from "./userinformation/PostCreator";
 
 export interface Post {
   id: number;
@@ -53,6 +54,7 @@ export default function PostForum({ user }: PostForumProps) {
   const lastName = user.name.split(" ")[1] || "";
   const email = user.email;
   const userObj = { firstName, lastName, imageUrl: user.picture, email };
+  const [showCreator, setShowCreator] = useState(false);
 
   const [confirmDeletePostId, setConfirmDeletePostId] = useState<number | null>(
     null
@@ -252,6 +254,17 @@ export default function PostForum({ user }: PostForumProps) {
             </div>
           </form>
         </div>
+        {/* Profile modal PostCreator */}
+        {showCreator && (
+          <PostCreator
+            user={user}
+            onClose={() => setShowCreator(false)}
+            onPostCreated={(newPost: Post) =>
+              setPosts((prev) => [newPost, ...prev])
+            }
+          />
+        )}
+
         {/* Posts */}
         {posts.map((post) => (
           <div
