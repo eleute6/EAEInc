@@ -51,16 +51,12 @@ create table InstrumentTag (
 create table Forum (
     forumID int auto_increment primary key,
     body text not null,
-    emailID varchar(100),
-    userName varchar(100),
-    pictureURL varchar(500),
+    emailID varchar(100) not null,
+    imageURL varchar(500),              -- image attached to the post
     likeCount int default 0,
-    imageURL varchar(500),
     uploadedAt timestamp default current_timestamp,
     isDeleted boolean default 0,
-    foreign key (emailID) references UserInfo(emailID),
-    foreign key (userName) references UserInfo(userName),
-    foreign key (pictureURL) references UserInfo(pictureURL)
+    foreign key (emailID) references UserInfo(emailID)
 );
 
 -- Forum comment table
@@ -102,7 +98,12 @@ create table eventAttendees (
     primary key (eventID, attendeeEmailID)
 );
 
-
-    
-    
-
+CREATE TABLE ForumLikes (
+  likeID INT AUTO_INCREMENT PRIMARY KEY,
+  forumID INT NOT NULL,
+  emailID VARCHAR(255) NOT NULL,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_like (forumID, emailID),
+  FOREIGN KEY (forumID) REFERENCES Forum(forumID),
+  FOREIGN KEY (emailID) REFERENCES UserInfo(emailID)
+);
