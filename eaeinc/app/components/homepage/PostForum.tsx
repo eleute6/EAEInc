@@ -15,6 +15,7 @@ import {
   likePost,
   addComment,
   deletePost,
+  deleteComment,
 } from "../../serverfuns";
 
 export interface Post {
@@ -129,6 +130,20 @@ export default function PostForum({ user }: PostForumProps) {
       );
       setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
     }
+  };
+
+  const handleDeleteComment = async (postId: number, commentId: number) => {
+    await deleteComment(commentId);
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              comments: (p.comments ?? []).filter((c) => c.id !== commentId),
+            }
+          : p
+      )
+    );
   };
 
   const handleDelete = async (postId: number) => {
@@ -322,6 +337,16 @@ export default function PostForum({ user }: PostForumProps) {
                   >
                     <span className="font-semibold">{c.userEmail}:</span>
                     <span>{c.text}</span>
+                    {c.userEmail === user.email && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-auto text-red-500 hover:text-red-700"
+                        onClick={() => handleDeleteComment(post.id, c.id)}
+                      >
+                        <TrashIcon size={14} /> Delete
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
