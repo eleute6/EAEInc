@@ -1,10 +1,16 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, Home, Search, Upload } from "lucide-react";
+import { BookOpen, Home, Search, Upload, Shield } from "lucide-react";
 
 interface HeaderProps {
-  user?: { name: string; email: string; picture: string } | null;
+  user?: {
+    name: string;
+    email: string;
+    picture: string /* isAdmin?: boolean */;
+  } | null;
 }
 
 export default function Header({ user }: HeaderProps) {
@@ -59,6 +65,18 @@ export default function Header({ user }: HeaderProps) {
             <Upload className="h-5 w-5" />
             <span className="text-xs mt-1">Upload</span>
           </Link>
+
+          {/* Admin Link */}
+          {/* Uncomment the condition below when you want to restrict to admins only */}
+          {/* {user?.isAdmin && ( */}
+          <Link
+            href="/admin"
+            className="flex flex-col items-center hover:text-[#FFC72C] transition"
+          >
+            <Shield className="h-5 w-5" />
+            <span className="text-xs mt-1">Admin</span>
+          </Link>
+          {/* )} */}
 
           {/* User Info */}
           {user && (
