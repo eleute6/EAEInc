@@ -730,3 +730,100 @@ export async function deleteEvent(eventID: number) {
     console.error("Error in deleteEvent:", err);
   }
 }
+
+// Save a new upload request
+export async function createUploadRequest(
+  firstName: string,
+  lastName: string,
+  email: string,
+  description: string,
+  keywords: string[],
+  fileName: string
+) {
+  // Insert into UploadRequest
+  const [result]: any = await db.execute(
+    `INSERT INTO UploadRequest (firstName, lastName, email, description, fileName)
+     VALUES (?, ?, ?, ?, ?)`,
+    [firstName, lastName, email, description, fileName]
+  );
+
+  const requestID = result.insertId;
+
+  // Link tags
+  for (const kw of keywords) {
+    const [rows]: any = await db.execute(
+      `SELECT tagID FROM Tag WHERE tagName = ?`,
+      [kw]
+    );
+    if (rows.length > 0) {
+      const tagID = rows[0].tagID;
+      await db.execute(
+        `INSERT INTO UploadRequestTag (requestID, tagID) VALUES (?, ?)`,
+        [requestID, tagID]
+      );
+    }
+  }
+
+  return requestID;
+}
+
+// Fetch all pending upload requests
+export async function fetchUploadRequests() {
+  const [rows]: any = await db.execute(`
+    SELECT ur.*, GROUP_CONCAT(t.tagName) AS tags
+    FROM UploadRequest ur
+    LEFT JOIN UploadRequestTag urt ON ur.requestID = urt.requestID
+    LEFT JOIN Tag t ON urt.tagID = t.tagID
+    WHERE ur.status = 'pending'
+    GROUP BY ur.requestID
+    ORDER BY ur.submittedAt DESC
+  `);
+  return rows;
+}
+
+// Approve an upload request (move into Instrument table)
+export async function approveUploadRequest(requestID: number) {
+  // Get request details
+  const [rows]: any = await db.execute(
+    `SELECT * FROM UploadRequest WHERE requestID = ?`,
+    [requestID]
+  );
+  if (rows.length === 0) return null;
+  const req = rows[0];
+
+  // Insert into Instrument
+  const [instrumentResult]: any = await db.execute(
+    `INSERT INTO Instrument (title, description, emailID, fileURL)
+     VALUES (?, ?, ?, ?)`,
+    [req.fileName, req.description, req.email, req.fileURL ?? ""]
+  );
+  const instrumentID = instrumentResult.insertId;
+
+  // Copy tags
+  const [tags]: any = await db.execute(
+    `SELECT tagID FROM UploadRequestTag WHERE requestID = ?`,
+    [requestID]
+  );
+  for (const tag of tags) {
+    await db.execute(
+      `INSERT INTO InstrumentTag (instrumentID, tagID) VALUES (?, ?)`,
+      [instrumentID, tag.tagID]
+    );
+  }
+
+  // Update status
+  await db.execute(
+    `UPDATE UploadRequest SET status = 'approved' WHERE requestID = ?`,
+    [requestID]
+  );
+
+  return instrumentID;
+}
+
+// Reject an upload request
+export async function rejectUploadRequest(requestID: number) {
+  await db.execute(
+    `UPDATE UploadRequest SET status = 'rejected' WHERE requestID = ?`,
+    [requestID]
+  );
+}

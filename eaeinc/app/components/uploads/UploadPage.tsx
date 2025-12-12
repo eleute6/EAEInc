@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import { Combobox } from "@headlessui/react";
+import { createUploadRequest } from "@/app/serverfuns"; // <-- use the helper
 
 export default function UploadPage() {
   const [formData, setFormData] = useState({
@@ -17,14 +18,13 @@ export default function UploadPage() {
 
   const [showPopup, setShowPopup] = useState(false);
   const [query, setQuery] = useState("");
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
-  //Keywords
+  // Keywords come from Tag table (but for now still preapproved list)
   const preapprovedKeywords = [
     "AI",
     "Allowable Costs",
@@ -49,6 +49,17 @@ export default function UploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Call server function to insert into UploadRequest + UploadRequestTag
+    await createUploadRequest(
+      formData.firstName,
+      formData.lastName,
+      formData.email,
+      formData.description,
+      formData.keywords,
+      formData.file?.name ?? ""
+    );
+
     setShowPopup(true);
     setFormData({
       firstName: "",
@@ -68,10 +79,7 @@ export default function UploadPage() {
   }, [showPopup]);
 
   return (
-    <div
-      className="mx-auto p-8 lg:p-10 space-y-6 bg-white rounded-lg shadow-md 
-                max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl"
-    >
+    <div className="mx-auto p-8 lg:p-10 space-y-6 bg-white rounded-lg shadow-md max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
         Upload Research
       </h1>
@@ -87,12 +95,11 @@ export default function UploadPage() {
             First Name <span className="text-[#FFC72C]">*</span>
             <input
               type="text"
-              name="firstName"
               value={formData.firstName}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, firstName: e.target.value }))
               }
-              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
               required
             />
           </label>
@@ -100,12 +107,11 @@ export default function UploadPage() {
             Last Name <span className="text-[#FFC72C]">*</span>
             <input
               type="text"
-              name="lastName"
               value={formData.lastName}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, lastName: e.target.value }))
               }
-              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
               required
             />
           </label>
@@ -116,12 +122,11 @@ export default function UploadPage() {
           Email Address <span className="text-[#FFC72C]">*</span>
           <input
             type="email"
-            name="email"
             value={formData.email}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, email: e.target.value }))
             }
-            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
             required
           />
         </label>
@@ -130,12 +135,11 @@ export default function UploadPage() {
         <label className="block text-sm font-semibold text-[#002855]">
           Brief Description <span className="text-[#FFC72C]">*</span>
           <textarea
-            name="description"
             value={formData.description}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
-            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
             rows={4}
             required
           />
@@ -157,7 +161,7 @@ export default function UploadPage() {
           >
             <div className="relative">
               <Combobox.Input
-                className="w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+                className="w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
                 onChange={(event) => setQuery(event.target.value)}
                 displayValue={(keywords: string[]) => keywords.join(", ")}
                 placeholder="Search or select up to 5 keywords..."
@@ -193,11 +197,6 @@ export default function UploadPage() {
               </Combobox.Options>
             </div>
           </Combobox>
-          {formData.keywords.length >= 5 && (
-            <p className="text-xs text-red-500 mt-1">
-              You can select a maximum of 5 keywords.
-            </p>
-          )}
         </div>
 
         {/* File Upload */}
@@ -209,13 +208,13 @@ export default function UploadPage() {
             ref={fileInputRef}
             type="file"
             accept=".pdf"
-            onChange={handleFileUpload} // <-- still needed!
+            onChange={handleFileUpload}
             className="hidden"
             required
           />
           <Button
             type="button"
-            onClick={handleButtonClick} // <-- new trigger
+            onClick={handleButtonClick}
             className="bg-[#002855] text-white hover:bg-[#FFC72C] hover:text-[#002855] transition font-semibold"
           >
             Select File
@@ -223,15 +222,7 @@ export default function UploadPage() {
 
           {formData.file && (
             <p className="text-sm text-[#002855] mt-2">
-              Attached:{" "}
-              <a
-                href={URL.createObjectURL(formData.file)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#002855] underline hover:text-[#FFC72C]"
-              >
-                {formData.file.name}
-              </a>
+              Attached: {formData.file.name}
             </p>
           )}
         </div>
@@ -244,18 +235,16 @@ export default function UploadPage() {
         </Button>
       </form>
 
-      {/* Popup Modal */}
+      {/* Popup */}
       {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 transition-opacity duration-300">
-          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full transform transition-all duration-300 scale-100 border-t-4 border-[#FFC72C]">
-            {/* Close button */}
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full border-t-4 border-[#FFC72C]">
             <button
               onClick={() => setShowPopup(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-[#002855] transition"
             >
               <X className="h-5 w-5" />
             </button>
-
             <h2 className="text-xl font-bold mb-4 text-[#002855]">
               Thank you for submitting
             </h2>
@@ -266,8 +255,6 @@ export default function UploadPage() {
               </span>
               .
             </p>
-
-            {/* Optional action button */}
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowPopup(false)}

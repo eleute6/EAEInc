@@ -9,7 +9,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "../ui/button";
-import { createEvent, deleteEvent, fetchEvents } from "@/app/serverfuns";
+import {
+  createEvent,
+  deleteEvent,
+  fetchEvents,
+  fetchUploadRequests,
+  approveUploadRequest,
+  rejectUploadRequest,
+} from "@/app/serverfuns";
 import { useSession } from "next-auth/react";
 
 interface Event {
@@ -20,12 +27,13 @@ interface Event {
 }
 
 interface UploadRequest {
-  id: number;
+  requestID: number;
   firstName: string;
   lastName: string;
   email: string;
   description: string;
   fileName: string;
+  tags?: string; // optional: comma-separated tag names
 }
 
 export default function AdminPage() {
@@ -37,35 +45,20 @@ export default function AdminPage() {
     location: "",
   });
 
-  const [uploads, setUploads] = useState<UploadRequest[]>([
-    {
-      id: 1,
-      firstName: "Jane",
-      lastName: "Doe",
-      email: "jane@example.com",
-      description: "Research on AI ethics",
-      fileName: "ai_ethics.pdf",
-    },
-    {
-      id: 2,
-      firstName: "John",
-      lastName: "Smith",
-      email: "john@example.com",
-      description: "Budget justification study",
-      fileName: "budget_study.pdf",
-    },
-  ]);
-
+  const [uploads, setUploads] = useState<UploadRequest[]>([]);
   const [showPopup, setShowPopup] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
-  // Load events from DB on mount
+  // Load events and uploads from DB on mount
   useEffect(() => {
-    const loadEvents = async () => {
-      const data = await fetchEvents();
-      setEvents(data);
+    const loadData = async () => {
+      const eventsData = await fetchEvents();
+      setEvents(eventsData);
+
+      const uploadsData = await fetchUploadRequests();
+      setUploads(uploadsData);
     };
-    loadEvents();
+    loadData();
   }, []);
 
   const handleEventSubmit = async (e: React.FormEvent) => {
@@ -97,14 +90,16 @@ export default function AdminPage() {
     setConfirmDeleteId(null);
   };
 
-  const handleApprove = (id: number) => {
-    setUploads((prev) => prev.filter((u) => u.id !== id));
-    // TODO: send to Instrument Consortium backend
+  const handleApprove = async (id: number) => {
+    await approveUploadRequest(id);
+    const uploadsData = await fetchUploadRequests();
+    setUploads(uploadsData);
   };
 
-  const handleReject = (id: number) => {
-    setUploads((prev) => prev.filter((u) => u.id !== id));
-    // TODO: log rejection
+  const handleReject = async (id: number) => {
+    await rejectUploadRequest(id);
+    const uploadsData = await fetchUploadRequests();
+    setUploads(uploadsData);
   };
 
   return (
@@ -197,7 +192,7 @@ export default function AdminPage() {
           <div className="space-y-4">
             {uploads.map((upload) => (
               <div
-                key={upload.id}
+                key={upload.requestID}
                 className="border rounded-lg p-4 flex justify-between items-center hover:bg-[#FFC72C]/10 transition"
               >
                 <div>
@@ -207,17 +202,20 @@ export default function AdminPage() {
                   <p className="text-sm text-gray-600">{upload.email}</p>
                   <p className="text-sm text-gray-700">{upload.description}</p>
                   <p className="text-xs text-gray-500">{upload.fileName}</p>
+                  {upload.tags && (
+                    <p className="text-xs text-gray-500">Tags: {upload.tags}</p>
+                  )}
                 </div>
                 <div className="flex space-x-2">
                   <Button
-                    onClick={() => handleApprove(upload.id)}
+                    onClick={() => handleApprove(upload.requestID)}
                     className="bg-green-600 text-white hover:bg-green-700 flex items-center space-x-1"
                   >
                     <CheckCircle className="w-4 h-4" />
                     <span>Approve</span>
                   </Button>
                   <Button
-                    onClick={() => handleReject(upload.id)}
+                    onClick={() => handleReject(upload.requestID)}
                     className="bg-red-600 text-white hover:bg-red-700 flex items-center space-x-1"
                   >
                     <XCircle className="w-4 h-4" />
