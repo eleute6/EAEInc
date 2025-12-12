@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
-import { CalendarDays, MapPin, CheckCircle, XCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  CalendarDays,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Trash2,
+} from "lucide-react";
 import { Button } from "../ui/button";
-import { createEvent } from "@/app/serverfuns";
+import { createEvent, deleteEvent, fetchEvents } from "@/app/serverfuns";
 import { useSession } from "next-auth/react";
 
 interface Event {
+  eventID?: number;
   title: string;
   date: string;
   location: string;
@@ -22,7 +29,7 @@ interface UploadRequest {
 }
 
 export default function AdminPage() {
-  const { data: session } = useSession(); // <-- use session here
+  const { data: session } = useSession();
   const [events, setEvents] = useState<Event[]>([]);
   const [newEvent, setNewEvent] = useState<Event>({
     title: "",
@@ -49,17 +56,45 @@ export default function AdminPage() {
     },
   ]);
 
+  const [showPopup, setShowPopup] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+
+  // Load events from DB on mount
+  useEffect(() => {
+    const loadEvents = async () => {
+      const data = await fetchEvents();
+      setEvents(data);
+    };
+    loadEvents();
+  }, []);
+
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await createEvent(
       newEvent.title,
-      "", // description optional
-      session?.user?.email ?? "admin@example.com", // <-- use session user
-      `${newEvent.date} 00:00:00`, // format for MySQL DATETIME
+      "",
+      session?.user?.email ?? "admin@example.com",
+      `${newEvent.date} 00:00:00`,
       `${newEvent.date} 00:00:00`,
       newEvent.location
     );
     setNewEvent({ title: "", date: "", location: "" });
+    setShowPopup(true);
+
+    // refresh events from DB
+    const data = await fetchEvents();
+    setEvents(data);
+  };
+
+  const handleDeleteEvent = async (eventID?: number) => {
+    if (!eventID) return;
+    await deleteEvent(eventID);
+
+    // refresh events from DB
+    const data = await fetchEvents();
+    setEvents(data);
+
+    setConfirmDeleteId(null);
   };
 
   const handleApprove = (id: number) => {
@@ -95,7 +130,7 @@ export default function AdminPage() {
             required
           />
           <input
-            type="date" // use date input for proper format
+            type="date"
             value={newEvent.date}
             onChange={(e) =>
               setNewEvent((prev) => ({ ...prev, date: e.target.value }))
@@ -123,20 +158,29 @@ export default function AdminPage() {
 
         {/* Display Events */}
         <aside className="space-y-3">
-          {events.map((event, idx) => (
+          {events.map((event) => (
             <div
-              key={idx}
-              className="flex items-start space-x-3 p-2 rounded-lg hover:bg-[#FDB813]/10 transition"
+              key={event.eventID}
+              className="flex items-start justify-between p-2 rounded-lg hover:bg-[#FDB813]/10 transition"
             >
-              <CalendarDays className="w-5 h-5 text-[#003768]" />
-              <div>
-                <p className="font-semibold text-[#003768]">{event.title}</p>
-                <p className="text-sm text-gray-600 flex items-center">
-                  <MapPin className="w-4 h-4 mr-1 text-[#FDB813]" />
-                  {event.location}
-                </p>
-                <p className="text-xs text-gray-500">{event.date}</p>
+              <div className="flex items-start space-x-3">
+                <CalendarDays className="w-5 h-5 text-[#003768]" />
+                <div>
+                  <p className="font-semibold text-[#003768]">{event.title}</p>
+                  <p className="text-sm text-gray-600 flex items-center">
+                    <MapPin className="w-4 h-4 mr-1 text-[#FDB813]" />
+                    {event.location}
+                  </p>
+                  <p className="text-xs text-gray-500">{event.date}</p>
+                </div>
               </div>
+              <Button
+                onClick={() => setConfirmDeleteId(event.eventID ?? null)}
+                className="bg-red-600 text-white hover:bg-red-700 flex items-center space-x-1"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete</span>
+              </Button>
             </div>
           ))}
         </aside>
@@ -185,6 +229,62 @@ export default function AdminPage() {
           </div>
         )}
       </section>
+
+      {/* Success Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full border-t-4 border-[#FFC72C]">
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-[#002855] transition"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-[#002855]">
+              Event created successfully
+            </h2>
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setShowPopup(false)}
+                className="bg-[#002855] text-white hover:bg-[#FFC72C] hover:text-[#002855] transition font-semibold"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Popup */}
+      {confirmDeleteId !== null && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full border-t-4 border-red-600">
+            <button
+              onClick={() => setConfirmDeleteId(null)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-red-600 transition"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-red-600">
+              Are you sure you want to delete this event?
+            </h2>
+            <div className="flex justify-end space-x-2">
+              <Button
+                onClick={() => setConfirmDeleteId(null)}
+                className="bg-gray-300 text-gray-800 hover:bg-gray-400 transition font-semibold"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => handleDeleteEvent(confirmDeleteId ?? undefined)}
+                className="bg-red-600 text-white hover:bg-red-700 transition font-semibold"
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

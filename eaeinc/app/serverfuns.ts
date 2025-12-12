@@ -720,3 +720,13 @@ export async function fetchEvents() {
     return [];
   }
 }
+
+/* DELETE EVENT IF ADMIN*/
+export async function deleteEvent(eventID: number) {
+  try {
+    await db.execute("DELETE FROM UpcomingEvents WHERE eventID = ?", [eventID]);
+    console.log("Deleted event:", eventID);
+  } catch (err: any) {
+    console.error("Error in deleteEvent:", err);
+  }
+}
