@@ -2,8 +2,20 @@
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import React, { useRef, useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { ImageIcon, XIcon } from "lucide-react";
-import { sendPost, fetchPosts } from "../../serverfuns";
+import {
+  ImageIcon,
+  XIcon,
+  HeartIcon,
+  MessageSquareIcon,
+  TrashIcon,
+} from "lucide-react";
+import {
+  sendPost,
+  fetchPosts,
+  likePost,
+  addComment,
+  deletePost,
+} from "../../serverfuns";
 
 export interface Post {
   id: number;
@@ -15,13 +27,15 @@ export interface Post {
     imageUrl: string;
     email: string;
   };
+  likes?: number;
+  likedByUser: boolean;
+  comments?: { id: number; text: string; userEmail: string }[];
 }
 
 interface PostForumProps {
   user: { name: string; email: string; picture: string };
 }
 
-// Adjust this to match your navbar height (e.g. 64px if h-16)
 const NAV_HEIGHT_PX = 64;
 
 export default function PostForum({ user }: PostForumProps) {
@@ -30,6 +44,9 @@ export default function PostForum({ user }: PostForumProps) {
 
   const [preview, setPreview] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+    {}
+  );
 
   const firstName = user.name.split(" ")[0];
   const lastName = user.name.split(" ")[1] || "";
@@ -37,12 +54,15 @@ export default function PostForum({ user }: PostForumProps) {
   const userObj = { firstName, lastName, imageUrl: user.picture, email };
 
   useEffect(() => {
+    if (!user) return; // Don't load posts until user is known
+
     async function loadPosts() {
-      const newPosts: Post[] = await fetchPosts();
+      const newPosts: Post[] = await fetchPosts(user.email);
       setPosts(newPosts);
     }
+
     loadPosts();
-  }, []);
+  }, [user]);
 
   const handlePostAction = async (formData: FormData) => {
     const text = (formData.get("postInput") as string)?.trim();
@@ -70,6 +90,9 @@ export default function PostForum({ user }: PostForumProps) {
       text,
       image: filename,
       user: userObj,
+      likes: 0,
+      likedByUser: false,
+      comments: [],
     };
 
     const inserted = await sendPost(newPost);
@@ -90,6 +113,40 @@ export default function PostForum({ user }: PostForumProps) {
   const handleRemoveImage = () => {
     setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleComment = async (postId: number) => {
+    const text = commentInputs[postId]?.trim();
+    if (!text) return;
+    const newComment = await addComment(postId, text, user.email);
+    if (newComment) {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, comments: [...(p.comments || []), newComment] }
+            : p
+        )
+      );
+      setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+    }
+  };
+
+  const handleDelete = async (postId: number) => {
+    await deletePost(postId); // no return value
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  };
+
+  const handleLike = async (postId: number) => {
+    const updated = await likePost(postId, user.email);
+    if (updated) {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, likes: updated.likes, likedByUser: updated.liked }
+            : p
+        )
+      );
+    }
   };
 
   return (
@@ -172,7 +229,6 @@ export default function PostForum({ user }: PostForumProps) {
             </div>
           </form>
         </div>
-
         {/* Posts */}
         {posts.map((post) => (
           <div
@@ -192,13 +248,83 @@ export default function PostForum({ user }: PostForumProps) {
               <p className="font-semibold text-[#003768]">
                 {post.user.firstName} {post.user.lastName}
               </p>
+              {post.user.email === user.email && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto text-red-500 hover:text-red-700"
+                  onClick={() => handleDelete(post.id)}
+                >
+                  <TrashIcon size={16} /> Delete
+                </Button>
+              )}
             </div>
             <p className="text-gray-800 mb-2">{post.text}</p>
             {post.image && (
               <img
                 src={`/uploads/${post.image}`}
-                className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
+                className="w-full max-h-64 object-cover rounded-lg border border-gray-200 mb-2"
               />
+            )}
+            {/* Likes & Comments */}
+            <div className="flex items-center space-x-4 mt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`flex items-center space-x-1 ${
+                  post.likedByUser ? "text-red-500" : "text-[#003768]"
+                }`}
+                onClick={() => handleLike(post.id)}
+              >
+                <HeartIcon
+                  size={16}
+                  className={
+                    post.likedByUser ? "fill-red-500" : "stroke-[#003768]"
+                  }
+                />
+                <span>{post.likes || 0}</span>
+              </Button>
+
+              {/* Comment input */}
+              <div className="flex-1">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    placeholder="Write a comment..."
+                    value={commentInputs[post.id] || ""}
+                    onChange={(e) =>
+                      setCommentInputs((prev) => ({
+                        ...prev,
+                        [post.id]: e.target.value,
+                      }))
+                    }
+                    className="flex-1 border border-gray-300 rounded-full px-3 py-1 text-sm focus:ring-2 focus:ring-[#FDB813]"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-[#003768]"
+                    onClick={() => handleComment(post.id)}
+                  >
+                    <MessageSquareIcon size={16} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Render comments */}
+            {post.comments && post.comments.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {post.comments.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-start space-x-2 text-sm text-gray-700"
+                  >
+                    <span className="font-semibold">{c.userEmail}:</span>
+                    <span>{c.text}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         ))}

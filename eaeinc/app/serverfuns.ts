@@ -235,21 +235,6 @@ export async function updateContributionScore(email: string, score: number) {
   }
 }
 
-/* FORUM POSTS */
-export async function sendPost(post: Post): Promise<Post | null> {
-  try {
-    await db.execute(
-      "INSERT INTO Forum (body, imageURL, emailID) VALUES (?, ?, ?)",
-      [post.text, post.image, post.user.email]
-    );
-
-    return post;
-  } catch (err: any) {
-    console.error("Error inserting post:", err);
-    return null;
-  }
-}
-
 /* SENDCOMMENT */
 /*  Function used to send data from a comment
     and then update the list of comments for a post.    */
@@ -275,35 +260,92 @@ export async function sendComment(fData: FormData) {
 /* FETCHPOSTS */
 /*  Function used to retrieve the first 50 posts 
     from the database to be displayed in the forum. */
-export async function fetchPosts() {
+/* FORUM POSTS */
+export async function sendPost(post: Post) {
   try {
-    // STEP 1: Query Database for Posts
-    const [rows] = await db.execute(`
-  SELECT Forum.forumID, Forum.body, Forum.imageURL, Forum.uploadedAt,
-         UserInfo.userName, UserInfo.pictureURL, UserInfo.emailID
-  FROM Forum
-  JOIN UserInfo ON Forum.emailID = UserInfo.emailID
-  WHERE Forum.isDeleted = FALSE
-  ORDER BY Forum.forumID DESC
-  LIMIT 50
-`);
+    const [result] = await db.execute(
+      `INSERT INTO Forum (body, emailID, imageURL, likeCount) 
+       VALUES (?, ?, ?, ?)`,
+      [post.text, post.user.email, post.image, 0]
+    );
 
-    const posts: Post[] = (rows as any[]).map((row) => ({
-      id: row.forumID,
-      text: row.body,
-      image: row.imageURL || null,
-      user: {
-        firstName: row.userName.split(" ")[0] || "Unknown",
-        lastName: row.userName.split(" ")[1] || "User",
-        imageUrl: row.pictureURL || "",
-        email: row.emailID,
-      },
-    }));
-    // STEP 3: Return Posts Array
+    const insertedId = (result as any).insertId;
+
+    // Return a fully shaped Post object
+    return {
+      id: insertedId,
+      text: post.text,
+      image: post.image,
+      likes: 0,
+      likedByUser: false, // new posts start unliked
+      user: post.user,
+      comments: [], // no comments yet
+    };
+  } catch (err) {
+    console.error("sendPost error:", err);
+    return null;
+  }
+}
+
+/* FETCHPOSTS */
+export async function fetchPosts(currentUserEmail: string) {
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        f.forumID,
+        f.body,
+        f.imageURL,
+        f.likeCount,
+        f.emailID,
+        u.userName,
+        u.pictureURL
+      FROM Forum f
+      JOIN UserInfo u ON u.emailID = f.emailID
+      WHERE f.isDeleted = 0
+      ORDER BY f.uploadedAt DESC
+    `);
+
+    const posts = await Promise.all(
+      (rows as any[]).map(async (row) => {
+        // Check if this user liked the post
+        const [likeRes] = await db.execute(
+          `SELECT 1 FROM ForumLikes WHERE forumID = ? AND emailID = ? LIMIT 1`,
+          [row.forumID, currentUserEmail]
+        );
+        const userLiked = (likeRes as any[]).length > 0;
+
+        // Fetch comments
+        const [comments] = await db.execute(
+          `SELECT commentID, body, emailID 
+           FROM ForumComment 
+           WHERE forumID = ? AND isDeleted = 0`,
+          [row.forumID]
+        );
+
+        return {
+          id: row.forumID,
+          text: row.body,
+          image: row.imageURL || null,
+          likes: row.likeCount,
+          likedByUser: userLiked,
+          user: {
+            firstName: row.userName.split(" ")[0] || "Unknown",
+            lastName: row.userName.split(" ")[1] || "User",
+            email: row.emailID,
+            imageUrl: row.pictureURL || "",
+          },
+          comments: (comments as any[]).map((c) => ({
+            id: c.commentID,
+            text: c.body,
+            userEmail: c.emailID,
+          })),
+        };
+      })
+    );
+
     return posts;
-  } catch (err: any) {
-    //Usual error catching.
-    console.error(err);
+  } catch (err) {
+    console.error("fetchPosts error:", err);
     return [];
   }
 }
@@ -340,10 +382,11 @@ export async function fetchComments(forumID: number) {
 /* FETCHNEXT */
 /*  Function used to retrieve the next 50 posts
     from the database to be displayed in the forum. */
-export async function fetchNext(lastPostID: number) {
+/* FETCHNEXT */
+export async function fetchNext(lastPostID: number, currentUserEmail: string) {
   const [rows] = await db.execute(
     `
-    SELECT Forum.forumID, Forum.body, Forum.imageURL, Forum.uploadedAt,
+    SELECT Forum.forumID, Forum.body, Forum.imageURL, Forum.likeCount,
            UserInfo.userName, UserInfo.pictureURL, UserInfo.emailID
     FROM Forum
     JOIN UserInfo ON Forum.emailID = UserInfo.emailID
@@ -354,17 +397,30 @@ export async function fetchNext(lastPostID: number) {
     [lastPostID]
   );
 
-  const posts: Post[] = (rows as any[]).map((row) => ({
-    id: row.forumID,
-    text: row.body,
-    image: row.imageURL || null,
-    user: {
-      firstName: row.userName.split(" ")[0] || "Unknown",
-      lastName: row.userName.split(" ")[1] || "User",
-      imageUrl: row.pictureURL || "",
-      email: row.emailID,
-    },
-  }));
+  const posts: Post[] = await Promise.all(
+    (rows as any[]).map(async (row) => {
+      const [likeRes] = await db.execute(
+        `SELECT 1 FROM ForumLikes WHERE forumID = ? AND emailID = ? LIMIT 1`,
+        [row.forumID, currentUserEmail]
+      );
+      const userLiked = (likeRes as any[]).length > 0;
+
+      return {
+        id: row.forumID,
+        text: row.body,
+        image: row.imageURL || null,
+        likes: row.likeCount,
+        likedByUser: userLiked,
+        user: {
+          firstName: row.userName.split(" ")[0] || "Unknown",
+          lastName: row.userName.split(" ")[1] || "User",
+          imageUrl: row.pictureURL || "",
+          email: row.emailID,
+        },
+        comments: [], // can lazy-load comments separately
+      };
+    })
+  );
 
   return posts;
 }
@@ -553,4 +609,74 @@ export async function uploadFile(item: Upload, file: File) {
 export async function fetchFile(fileName: string) {
   //TO DO ::  Need to check if files can be pulled directly from local storage or if
   //          they need to be routed through the backend first.
+}
+
+export async function likePost(postId: number, email: string) {
+  try {
+    // 1. Check whether this user already liked it
+    const [exists] = await db.execute(
+      `SELECT * FROM ForumLikes WHERE forumID = ? AND emailID = ?`,
+      [postId, email]
+    );
+
+    const alreadyLiked = (exists as any[]).length > 0;
+
+    if (alreadyLiked) {
+      // 2. Remove like (UNLIKE)
+      await db.execute(
+        `DELETE FROM ForumLikes WHERE forumID = ? AND emailID = ?`,
+        [postId, email]
+      );
+
+      await db.execute(
+        `UPDATE Forum SET likeCount = likeCount - 1 WHERE forumID = ?`,
+        [postId]
+      );
+    } else {
+      // 3. Add like (LIKE)
+      await db.execute(
+        `INSERT INTO ForumLikes (forumID, emailID) VALUES (?, ?)`,
+        [postId, email]
+      );
+
+      await db.execute(
+        `UPDATE Forum SET likeCount = likeCount + 1 WHERE forumID = ?`,
+        [postId]
+      );
+    }
+
+    // 4. Return updated like count + whether THIS user liked it
+    const [rows] = await db.execute(
+      `SELECT likeCount FROM Forum WHERE forumID = ?`,
+      [postId]
+    );
+
+    return {
+      likes: (rows as any[])[0].likeCount,
+      liked: !alreadyLiked, // flip state
+    };
+  } catch (err) {
+    console.error("Error in likePost:", err);
+    return null;
+  }
+}
+
+export async function addComment(postId: number, text: string, email: string) {
+  try {
+    const [result] = await db.execute(
+      `INSERT INTO ForumComment (forumID, emailID, body) VALUES (?, ?, ?)`,
+      [postId, email, text]
+    );
+
+    const commentId = (result as any).insertId;
+
+    return {
+      id: commentId,
+      text,
+      userEmail: email,
+    };
+  } catch (err) {
+    console.error("addComment error:", err);
+    return null;
+  }
 }

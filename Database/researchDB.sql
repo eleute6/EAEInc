@@ -98,7 +98,12 @@ create table eventAttendees (
     primary key (eventID, attendeeEmailID)
 );
 
-
-    
-    
-
+CREATE TABLE ForumLikes (
+  likeID INT AUTO_INCREMENT PRIMARY KEY,
+  forumID INT NOT NULL,
+  emailID VARCHAR(255) NOT NULL,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_like (forumID, emailID),
+  FOREIGN KEY (forumID) REFERENCES Forum(forumID),
+  FOREIGN KEY (emailID) REFERENCES UserInfo(emailID)
+);
