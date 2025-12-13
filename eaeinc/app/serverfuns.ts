@@ -747,16 +747,17 @@ export async function createUploadRequest(
   description: string,
   keywords: string[],
   fileName: string,
-  fileURL: string
+  fileURL: string,
+  title: string
 ) {
   // Construct a URL pointing to the pdfs subfolder
   const uniqueName = Date.now() + "-" + fileName;
 
   // Insert into UploadRequest
   const [result]: any = await db.execute(
-    `INSERT INTO UploadRequest (firstName, lastName, email, description, fileName, fileURL)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [firstName, lastName, email, description, fileName, fileURL]
+    `INSERT INTO UploadRequest (firstName, lastName, email, description, fileName, fileURL, title)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [firstName, lastName, email, description, fileName, fileURL, title]
   );
 
   const requestID = result.insertId;
@@ -807,7 +808,7 @@ export async function approveUploadRequest(requestID: number) {
   const [instrumentResult]: any = await db.execute(
     `INSERT INTO Instrument (title, description, emailID, fileURL)
      VALUES (?, ?, ?, ?)`,
-    [req.fileName, req.description, req.email, req.fileURL ?? ""]
+    [req.title, req.description, req.email, req.fileURL ?? ""]
   );
   const instrumentID = instrumentResult.insertId;
 

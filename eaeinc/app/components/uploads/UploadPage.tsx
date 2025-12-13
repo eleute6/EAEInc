@@ -13,6 +13,7 @@ export default function UploadPage() {
     description: "",
     keywords: [] as string[],
     file: null as File | null,
+    title: "",
   });
 
   const [showPopup, setShowPopup] = useState(false);
@@ -56,6 +57,7 @@ export default function UploadPage() {
     fd.append("email", formData.email);
     fd.append("description", formData.description);
     fd.append("keywords", JSON.stringify(formData.keywords));
+    fd.append("title", formData.title);
 
     const res = await fetch("/api/upload-request", {
       method: "POST",
@@ -70,6 +72,7 @@ export default function UploadPage() {
         description: "",
         keywords: [],
         file: null,
+        title: "",
       });
     } else {
       const data = await res.json().catch(() => ({}));
@@ -121,6 +124,18 @@ export default function UploadPage() {
             />
           </label>
         </div>
+        <label className="block text-sm font-semibold text-[#002855]">
+          Research Title <span className="text-[#FFC72C]">*</span>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
+            }
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
+            required
+          />
+        </label>
 
         {/* Email */}
         <label className="block text-sm font-semibold text-[#002855]">
