@@ -32,6 +32,7 @@ interface Instruments {
   emailID: string;
   upload: number;
   filePath: string;
+  tags?: string[];
 }
 
 interface Comments {
@@ -464,11 +465,17 @@ export async function deleteComment(commentID: number) {
     members from the database for display.  */
 export async function fetchConsortiumAll() {
   try {
-    // STEP 1: Query Database for Consortium Items
-    const [rows] = await db.execute(
-      "SELECT * FROM Instrument ORDER BY instrumentID DESC LIMIT 50"
-    ); //Gets the first 50 items from the Instruments Table.
-    // STEP 2: Construct Instruments Array
+    const [rows] = await db.execute(`
+      SELECT i.*, GROUP_CONCAT(t.tagName) AS tags
+      FROM Instrument i
+      LEFT JOIN InstrumentTag it ON i.instrumentID = it.instrumentID
+      LEFT JOIN Tag t ON it.tagID = t.tagID
+      WHERE i.isDeleted = FALSE
+      GROUP BY i.instrumentID
+      ORDER BY i.instrumentID DESC
+      LIMIT 50
+    `);
+
     const instruments: Instruments[] = (rows as any[]).map((row) => ({
       id: row.instrumentID,
       title: row.title,
@@ -476,12 +483,13 @@ export async function fetchConsortiumAll() {
       emailID: row.emailID,
       upload: row.uploadedAt,
       filePath: row.fileURL,
+      tags: row.tags ? row.tags.split(",") : [],
     }));
-    // STEP 3: Return Instruments Array
+
     return instruments;
   } catch (err: any) {
-    //Usual error catching.
     console.error(err);
+    return []; // <-- always return an array
   }
 }
 
