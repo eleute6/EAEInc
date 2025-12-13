@@ -107,3 +107,23 @@ CREATE TABLE ForumLikes (
   FOREIGN KEY (forumID) REFERENCES Forum(forumID),
   FOREIGN KEY (emailID) REFERENCES UserInfo(emailID)
 );
+
+CREATE TABLE UploadRequest (
+    requestID INT AUTO_INCREMENT PRIMARY KEY,
+    firstName VARCHAR(100) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    fileName VARCHAR(255) NOT NULL,
+    fileURL VARCHAR(500),
+    submittedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending','approved','rejected') DEFAULT 'pending'
+);
+
+CREATE TABLE UploadRequestTag (
+    requestID INT NOT NULL,
+    tagID INT NOT NULL,
+    PRIMARY KEY (requestID, tagID),
+    FOREIGN KEY (requestID) REFERENCES UploadRequest(requestID) ON DELETE CASCADE,
+    FOREIGN KEY (tagID) REFERENCES Tag(tagID) ON DELETE CASCADE
+);

@@ -13,18 +13,15 @@ export default function UploadPage() {
     description: "",
     keywords: [] as string[],
     file: null as File | null,
+    title: "",
   });
 
   const [showPopup, setShowPopup] = useState(false);
   const [query, setQuery] = useState("");
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleButtonClick = () => fileInputRef.current?.click();
 
-  //Keywords
   const preapprovedKeywords = [
     "AI",
     "Allowable Costs",
@@ -33,91 +30,7 @@ export default function UploadPage() {
     "Budget",
     "Budget Justification",
     "Budget Narrative",
-    "Career Development Award",
-    "Cayuse",
-    "CITI",
-    "Clinical Trial",
-    "Collaborative Research Agreement",
-    "Compliance",
-    "Conflict of Interest",
-    "Consultant",
-    "Cost Transfer",
-    "Data & Safety Monitoring Board (DSMB)",
-    "Data Management & Sharing Plan (DMSP)",
-    "Data Safety & Monitoring Plan (DSMP)",
-    "Data Transfer & Use Agreement (DTUA)",
-    "Department of Defense",
-    "Department of Education",
-    "Department of Energy",
-    "Department of Health & Human Services",
-    "Department of Justice",
-    "Direct Cost",
-    "Environmental Protection Agency (EPA)",
-    "Environmental Health & Safety",
-    "Equipment",
-    "ERA Commons",
-    "Export Controls",
-    "Facilities",
-    "Facilities & Administration Cost (F&A)",
-    "FDA",
-    "Federal Grant",
-    "FERPA",
-    "Fiscal Year (FY)",
-    "Foundation Grant",
-    "Fringe Benefits",
-    "Gift Cards",
-    "Grant Officer",
-    "Grants.gov",
-    "Human Subjects",
-    "Indemnification",
-    "iEDISON",
-    "In-Kind Cost Share",
-    "Indirect Cost",
-    "Institutional Base Salary",
-    "Institutional Biosafety Committee (IBC)",
-    "Institutional Review Board (IRB)",
-    "Intellectual Property (IP)",
-    "Internal Revenue Code",
-    "Just-In-Time (JIT)",
-    "K Award",
-    "Letter of Intent",
-    "Mandatory Cost Sharing",
-    "Material Transfer & Usa Agreement (MTUA)",
-    "Modifications",
-    "National Institute of Health (NIH)",
-    "National Science Foundation (NSF)",
-    "Non-Disclosure Agreement (NDA)",
-    "P Grants",
-    "Patent",
-    "Percent Effort",
-    "Post-Award",
-    "Pre-Award",
-    "Procurement",
-    "Project Period",
-    "Proposal Development",
-    "Proposal Routing Form",
-    "Qualtrics",
-    "R01",
-    "R03",
-    "R13",
-    "R15",
-    "R21",
-    "REDCap",
-    "Research Misconduct",
-    "SBIR",
-    "Small Business Technology Transfer (STTR)",
-    "Sponsored Research Agreement (SRA)",
-    "Stipend",
-    "Study Closure",
-    "Subagreement",
-    "Subcontract",
-    "Subrecipient",
-    "Survey",
-    "System for Award Management (SAM)",
-    "USDA",
-    "Waiver of Liability",
   ];
-
   const filteredKeywords =
     query === ""
       ? preapprovedKeywords
@@ -132,15 +45,39 @@ export default function UploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowPopup(true);
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      description: "",
-      keywords: [],
-      file: null,
+    if (!formData.file) {
+      alert("Please select a PDF file before submitting.");
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("file", formData.file);
+    fd.append("firstName", formData.firstName);
+    fd.append("lastName", formData.lastName);
+    fd.append("email", formData.email);
+    fd.append("description", formData.description);
+    fd.append("keywords", JSON.stringify(formData.keywords));
+    fd.append("title", formData.title);
+
+    const res = await fetch("/api/upload-request", {
+      method: "POST",
+      body: fd,
     });
+    if (res.ok) {
+      setShowPopup(true);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        description: "",
+        keywords: [],
+        file: null,
+        title: "",
+      });
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Upload failed. Please try again.");
+    }
   };
 
   useEffect(() => {
@@ -149,14 +86,10 @@ export default function UploadPage() {
       return () => clearTimeout(timer);
     }
   }, [showPopup]);
-
   return (
-    <div
-      className="mx-auto p-8 lg:p-10 space-y-6 bg-white rounded-lg shadow-md 
-                max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl"
-    >
+    <div className="mx-auto p-8 lg:p-10 space-y-6 bg-white rounded-lg shadow-md max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
-        Upload Research
+        Upload Resources
       </h1>
       <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">
         By choosing to upload to the Merrimack College Community Research Page,
@@ -170,12 +103,11 @@ export default function UploadPage() {
             First Name <span className="text-[#FFC72C]">*</span>
             <input
               type="text"
-              name="firstName"
               value={formData.firstName}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, firstName: e.target.value }))
               }
-              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
               required
             />
           </label>
@@ -183,28 +115,38 @@ export default function UploadPage() {
             Last Name <span className="text-[#FFC72C]">*</span>
             <input
               type="text"
-              name="lastName"
               value={formData.lastName}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, lastName: e.target.value }))
               }
-              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+              className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
               required
             />
           </label>
         </div>
+        <label className="block text-sm font-semibold text-[#002855]">
+          Research Title <span className="text-[#FFC72C]">*</span>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
+            }
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
+            required
+          />
+        </label>
 
         {/* Email */}
         <label className="block text-sm font-semibold text-[#002855]">
           Email Address <span className="text-[#FFC72C]">*</span>
           <input
             type="email"
-            name="email"
             value={formData.email}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, email: e.target.value }))
             }
-            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
             required
           />
         </label>
@@ -213,12 +155,11 @@ export default function UploadPage() {
         <label className="block text-sm font-semibold text-[#002855]">
           Brief Description <span className="text-[#FFC72C]">*</span>
           <textarea
-            name="description"
             value={formData.description}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
-            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+            className="mt-1 w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
             rows={4}
             required
           />
@@ -240,7 +181,7 @@ export default function UploadPage() {
           >
             <div className="relative">
               <Combobox.Input
-                className="w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C] focus:border-[#002855]"
+                className="w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
                 onChange={(event) => setQuery(event.target.value)}
                 displayValue={(keywords: string[]) => keywords.join(", ")}
                 placeholder="Search or select up to 5 keywords..."
@@ -276,11 +217,6 @@ export default function UploadPage() {
               </Combobox.Options>
             </div>
           </Combobox>
-          {formData.keywords.length >= 5 && (
-            <p className="text-xs text-red-500 mt-1">
-              You can select a maximum of 5 keywords.
-            </p>
-          )}
         </div>
 
         {/* File Upload */}
@@ -292,13 +228,13 @@ export default function UploadPage() {
             ref={fileInputRef}
             type="file"
             accept=".pdf"
-            onChange={handleFileUpload} // <-- still needed!
+            onChange={handleFileUpload}
             className="hidden"
             required
           />
           <Button
             type="button"
-            onClick={handleButtonClick} // <-- new trigger
+            onClick={handleButtonClick}
             className="bg-[#002855] text-white hover:bg-[#FFC72C] hover:text-[#002855] transition font-semibold"
           >
             Select File
@@ -306,15 +242,7 @@ export default function UploadPage() {
 
           {formData.file && (
             <p className="text-sm text-[#002855] mt-2">
-              Attached:{" "}
-              <a
-                href={URL.createObjectURL(formData.file)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#002855] underline hover:text-[#FFC72C]"
-              >
-                {formData.file.name}
-              </a>
+              Attached: {formData.file.name}
             </p>
           )}
         </div>
@@ -327,18 +255,16 @@ export default function UploadPage() {
         </Button>
       </form>
 
-      {/* Popup Modal */}
+      {/* Popup */}
       {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 transition-opacity duration-300">
-          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full transform transition-all duration-300 scale-100 border-t-4 border-[#FFC72C]">
-            {/* Close button */}
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 relative max-w-md w-full border-t-4 border-[#FFC72C]">
             <button
               onClick={() => setShowPopup(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-[#002855] transition"
             >
               <X className="h-5 w-5" />
             </button>
-
             <h2 className="text-xl font-bold mb-4 text-[#002855]">
               Thank you for submitting
             </h2>
@@ -349,8 +275,6 @@ export default function UploadPage() {
               </span>
               .
             </p>
-
-            {/* Optional action button */}
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowPopup(false)}

@@ -32,6 +32,7 @@ interface Instruments {
   emailID: string;
   upload: number;
   filePath: string;
+  tags?: string[];
 }
 
 interface Comments {
@@ -464,11 +465,17 @@ export async function deleteComment(commentID: number) {
     members from the database for display.  */
 export async function fetchConsortiumAll() {
   try {
-    // STEP 1: Query Database for Consortium Items
-    const [rows] = await db.execute(
-      "SELECT * FROM Instrument ORDER BY instrumentID DESC LIMIT 50"
-    ); //Gets the first 50 items from the Instruments Table.
-    // STEP 2: Construct Instruments Array
+    const [rows] = await db.execute(`
+      SELECT i.*, GROUP_CONCAT(t.tagName) AS tags
+      FROM Instrument i
+      LEFT JOIN InstrumentTag it ON i.instrumentID = it.instrumentID
+      LEFT JOIN Tag t ON it.tagID = t.tagID
+      WHERE i.isDeleted = FALSE
+      GROUP BY i.instrumentID
+      ORDER BY i.instrumentID DESC
+      LIMIT 50
+    `);
+
     const instruments: Instruments[] = (rows as any[]).map((row) => ({
       id: row.instrumentID,
       title: row.title,
@@ -476,12 +483,13 @@ export async function fetchConsortiumAll() {
       emailID: row.emailID,
       upload: row.uploadedAt,
       filePath: row.fileURL,
+      tags: row.tags ? row.tags.split(",") : [],
     }));
-    // STEP 3: Return Instruments Array
+
     return instruments;
   } catch (err: any) {
-    //Usual error catching.
     console.error(err);
+    return []; // <-- always return an array
   }
 }
 
@@ -502,6 +510,7 @@ export async function fetchConsortiumNext(lastInstrumentID: number) {
     emailID: row.emailID,
     upload: row.uploadedAt,
     filePath: row.fileURL,
+    tags: row.tags ? row.tags.split(",") : [],
   }));
   // STEP 3: Return Instruments Array
   return instruments;
@@ -679,4 +688,156 @@ export async function addComment(postId: number, text: string, email: string) {
     console.error("addComment error:", err);
     return null;
   }
+}
+
+/* CREATEEVENT */
+/*  Function used by AdminPage to insert a new event into UpcomingEvents table. */
+export async function createEvent(
+  title: string,
+  description: string,
+  emailID: string,
+  startDateTime: string,
+  endDateTime: string,
+  location: string
+) {
+  try {
+    await db.execute(
+      `INSERT INTO UpcomingEvents 
+        (title, eventDescription, emailID, startDateTime, endDateTime, location) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [title, description, emailID, startDateTime, endDateTime, location]
+    );
+    console.log("Event created:", title);
+  } catch (err: any) {
+    console.error("Error in createEvent:", err);
+  }
+}
+
+/* FETCHEVENTS */
+/*  Function used by UpcomingEvents component to retrieve all events from DB. */
+export async function fetchEvents() {
+  try {
+    const [rows] = await db.execute(
+      `SELECT eventID, title, location, startDateTime, endDateTime
+        FROM UpcomingEvents
+        WHERE startDateTime >= NOW()
+        ORDER BY startDateTime ASC;`
+    );
+    return rows as any[];
+  } catch (err: any) {
+    console.error("Error in fetchEvents:", err);
+    return [];
+  }
+}
+
+/* DELETE EVENT IF ADMIN*/
+export async function deleteEvent(eventID: number) {
+  try {
+    await db.execute("DELETE FROM UpcomingEvents WHERE eventID = ?", [eventID]);
+    console.log("Deleted event:", eventID);
+  } catch (err: any) {
+    console.error("Error in deleteEvent:", err);
+  }
+}
+
+// Save a new upload request
+export async function createUploadRequest(
+  firstName: string,
+  lastName: string,
+  email: string,
+  description: string,
+  keywords: string[],
+  fileName: string,
+  fileURL: string,
+  title: string
+) {
+  // Construct a URL pointing to the pdfs subfolder
+  const uniqueName = Date.now() + "-" + fileName;
+
+  // Insert into UploadRequest
+  const [result]: any = await db.execute(
+    `INSERT INTO UploadRequest (firstName, lastName, email, description, fileName, fileURL, title)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [firstName, lastName, email, description, fileName, fileURL, title]
+  );
+
+  const requestID = result.insertId;
+
+  // Link tags
+  for (const kw of keywords) {
+    const [rows]: any = await db.execute(
+      `SELECT tagID FROM Tag WHERE tagName = ?`,
+      [kw]
+    );
+    if (rows.length > 0) {
+      const tagID = rows[0].tagID;
+      await db.execute(
+        `INSERT INTO UploadRequestTag (requestID, tagID) VALUES (?, ?)`,
+        [requestID, tagID]
+      );
+    }
+  }
+
+  return requestID;
+}
+
+// Fetch all pending upload requests
+export async function fetchUploadRequests() {
+  const [rows]: any = await db.execute(`
+    SELECT ur.*, GROUP_CONCAT(t.tagName) AS tags
+    FROM UploadRequest ur
+    LEFT JOIN UploadRequestTag urt ON ur.requestID = urt.requestID
+    LEFT JOIN Tag t ON urt.tagID = t.tagID
+    WHERE ur.status = 'pending'
+    GROUP BY ur.requestID
+    ORDER BY ur.submittedAt DESC
+  `);
+  return rows;
+}
+
+// Approve an upload request (move into Instrument table)
+export async function approveUploadRequest(requestID: number) {
+  // Get request details
+  const [rows]: any = await db.execute(
+    `SELECT * FROM UploadRequest WHERE requestID = ?`,
+    [requestID]
+  );
+  if (rows.length === 0) return null;
+  const req = rows[0];
+
+  // Insert into Instrument
+  const [instrumentResult]: any = await db.execute(
+    `INSERT INTO Instrument (title, description, emailID, fileURL)
+     VALUES (?, ?, ?, ?)`,
+    [req.title, req.description, req.email, req.fileURL ?? ""]
+  );
+  const instrumentID = instrumentResult.insertId;
+
+  // Copy tags
+  const [tags]: any = await db.execute(
+    `SELECT tagID FROM UploadRequestTag WHERE requestID = ?`,
+    [requestID]
+  );
+  for (const tag of tags) {
+    await db.execute(
+      `INSERT INTO InstrumentTag (instrumentID, tagID) VALUES (?, ?)`,
+      [instrumentID, tag.tagID]
+    );
+  }
+
+  // Update status
+  await db.execute(
+    `UPDATE UploadRequest SET status = 'approved' WHERE requestID = ?`,
+    [requestID]
+  );
+
+  return instrumentID;
+}
+
+// Reject an upload request
+export async function rejectUploadRequest(requestID: number) {
+  await db.execute(
+    `UPDATE UploadRequest SET status = 'rejected' WHERE requestID = ?`,
+    [requestID]
+  );
 }
