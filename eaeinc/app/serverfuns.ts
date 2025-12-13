@@ -738,11 +738,11 @@ export async function createUploadRequest(
   email: string,
   description: string,
   keywords: string[],
-  fileName: string
+  fileName: string,
+  fileURL: string
 ) {
   // Construct a URL pointing to the pdfs subfolder
   const uniqueName = Date.now() + "-" + fileName;
-  const fileURL = "/uploads/pdfs/" + uniqueName;
 
   // Insert into UploadRequest
   const [result]: any = await db.execute(

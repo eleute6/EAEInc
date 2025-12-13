@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import { Combobox } from "@headlessui/react";
-import { createUploadRequest } from "@/app/serverfuns"; // <-- use the helper
 
 export default function UploadPage() {
   const [formData, setFormData] = useState({
@@ -20,11 +19,8 @@ export default function UploadPage() {
   const [query, setQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleButtonClick = () => fileInputRef.current?.click();
 
-  // Keywords come from Tag table (but for now still preapproved list)
   const preapprovedKeywords = [
     "AI",
     "Allowable Costs",
@@ -34,7 +30,6 @@ export default function UploadPage() {
     "Budget Justification",
     "Budget Narrative",
   ];
-
   const filteredKeywords =
     query === ""
       ? preapprovedKeywords
@@ -49,26 +44,37 @@ export default function UploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.file) {
+      alert("Please select a PDF file before submitting.");
+      return;
+    }
 
-    // Call server function to insert into UploadRequest + UploadRequestTag
-    await createUploadRequest(
-      formData.firstName,
-      formData.lastName,
-      formData.email,
-      formData.description,
-      formData.keywords,
-      formData.file?.name ?? ""
-    );
+    const fd = new FormData();
+    fd.append("file", formData.file);
+    fd.append("firstName", formData.firstName);
+    fd.append("lastName", formData.lastName);
+    fd.append("email", formData.email);
+    fd.append("description", formData.description);
+    fd.append("keywords", JSON.stringify(formData.keywords));
 
-    setShowPopup(true);
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      description: "",
-      keywords: [],
-      file: null,
+    const res = await fetch("/api/upload-request", {
+      method: "POST",
+      body: fd,
     });
+    if (res.ok) {
+      setShowPopup(true);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        description: "",
+        keywords: [],
+        file: null,
+      });
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Upload failed. Please try again.");
+    }
   };
 
   useEffect(() => {
@@ -77,7 +83,6 @@ export default function UploadPage() {
       return () => clearTimeout(timer);
     }
   }, [showPopup]);
-
   return (
     <div className="mx-auto p-8 lg:p-10 space-y-6 bg-white rounded-lg shadow-md max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
