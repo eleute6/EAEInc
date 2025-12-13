@@ -740,11 +740,15 @@ export async function createUploadRequest(
   keywords: string[],
   fileName: string
 ) {
+  // Construct a URL pointing to the pdfs subfolder
+  const uniqueName = Date.now() + "-" + fileName;
+  const fileURL = "/uploads/pdfs/" + uniqueName;
+
   // Insert into UploadRequest
   const [result]: any = await db.execute(
-    `INSERT INTO UploadRequest (firstName, lastName, email, description, fileName)
-     VALUES (?, ?, ?, ?, ?)`,
-    [firstName, lastName, email, description, fileName]
+    `INSERT INTO UploadRequest (firstName, lastName, email, description, fileName, fileURL)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [firstName, lastName, email, description, fileName, fileURL]
   );
 
   const requestID = result.insertId;

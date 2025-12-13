@@ -33,6 +33,7 @@ interface UploadRequest {
   email: string;
   description: string;
   fileName: string;
+  fileURL: string; // <-- new field for PDF link
   tags?: string; // optional: comma-separated tag names
 }
 
@@ -204,6 +205,16 @@ export default function AdminPage() {
                   <p className="text-xs text-gray-500">{upload.fileName}</p>
                   {upload.tags && (
                     <p className="text-xs text-gray-500">Tags: {upload.tags}</p>
+                  )}
+                  {upload.fileURL && (
+                    <a
+                      href={upload.fileURL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-[#002855] underline hover:text-[#FFC72C] block mt-1"
+                    >
+                      View PDF
+                    </a>
                   )}
                 </div>
                 <div className="flex space-x-2">
