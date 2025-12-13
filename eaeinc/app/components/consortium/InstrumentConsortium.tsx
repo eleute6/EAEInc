@@ -7,6 +7,7 @@ import { fetchConsortiumAll } from "@/app/serverfuns";
 export interface Upload {
   id: number;
   title: string;
+  description: string;
   keywords: string[];
   author: string;
   date: string;
@@ -24,6 +25,7 @@ export default function InstrumentConsortium() {
       const uploadsData: Upload[] = instruments.map((inst) => ({
         id: inst.id,
         title: inst.title,
+        description: inst.description,
         keywords: inst.tags || [], // if you join tags in your query
         author: inst.emailID,
         date: new Date(inst.upload).toLocaleDateString(),
@@ -78,6 +80,10 @@ export default function InstrumentConsortium() {
               <p className="text-sm text-gray-600">
                 By {upload.author} • {upload.date}
               </p>
+              {/* Description */}
+              <p className="mt-2 text-gray-700">{upload.description}</p>
+
+              {/* Keywords */}
               <div className="mt-2 flex flex-wrap gap-2">
                 {upload.keywords.map((kw) => (
                   <span

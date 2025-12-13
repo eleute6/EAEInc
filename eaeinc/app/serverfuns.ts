@@ -510,6 +510,7 @@ export async function fetchConsortiumNext(lastInstrumentID: number) {
     emailID: row.emailID,
     upload: row.uploadedAt,
     filePath: row.fileURL,
+    tags: row.tags ? row.tags.split(",") : [],
   }));
   // STEP 3: Return Instruments Array
   return instruments;
