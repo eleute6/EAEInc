@@ -89,7 +89,7 @@ export default function UploadPage() {
   return (
     <div className="mx-auto p-8 lg:p-10 space-y-6 bg-white rounded-lg shadow-md max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
-        Upload Research
+        Upload Resources
       </h1>
       <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">
         By choosing to upload to the Merrimack College Community Research Page,
