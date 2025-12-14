@@ -65,11 +65,13 @@ create table ForumComment (
 	commentID int auto_increment primary key,
     forumID int not null,
     emailID varchar(100),
+    userName varchar(100) not null,
     body text not null,
     postedAt timestamp not null default current_timestamp,
     isDeleted boolean default 0,
     foreign key (forumID) references Forum(forumID) on delete cascade,
-    foreign key (emailID) references UserInfo(emailID) on delete cascade
+    foreign key (emailID) references UserInfo(emailID) on delete cascade,
+    foreign key (userName) references UserInfo(userName) on delete cascade
 );
 
 
@@ -99,13 +101,15 @@ create table eventAttendees (
 );
 
 CREATE TABLE ForumLikes (
-  likeID INT AUTO_INCREMENT PRIMARY KEY,
-  forumID INT NOT NULL,
-  emailID VARCHAR(255) NOT NULL,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY unique_like (forumID, emailID),
-  FOREIGN KEY (forumID) REFERENCES Forum(forumID),
-  FOREIGN KEY (emailID) REFERENCES UserInfo(emailID)
+    likeID INT AUTO_INCREMENT PRIMARY KEY,
+    forumID INT NOT NULL,
+    emailID VARCHAR(255) NOT NULL,
+    userName VARCHAR(100) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_like (forumID, emailID),
+    FOREIGN KEY (forumID) REFERENCES Forum(forumID),
+    FOREIGN KEY (emailID) REFERENCES UserInfo(emailID),
+    FOREIGN KEY (userName) REFERENCES UserInfo(userName)
 );
 
 CREATE TABLE UploadRequest (
