@@ -20,23 +20,26 @@ export async function GET() {
 
     const uniqueTags = Array.from(new Set(csvTags));
 
-    if (uniqueTags.length > 0) {
-      await Promise.all(
-        uniqueTags.map((tag) =>
-          db.execute(
-            `INSERT IGNORE INTO Tag (tagName) VALUES (?)`,
-            [tag]
+    let dbTags: string[] | null = null;
+
+    try {
+      if (uniqueTags.length > 0) {
+        await Promise.all(
+          uniqueTags.map((tag) =>
+            db.execute(`INSERT IGNORE INTO Tag (tagName) VALUES (?)`, [tag])
           )
-        )
-      );
+        );
+      }
+
+      const [rows] = await db.execute(`SELECT tagName FROM Tag ORDER BY tagName ASC`);
+      dbTags = (rows as any[]).map((row) => row.tagName as string);
+    } catch (dbError) {
+      console.error("Failed to sync or read tags from the database: ", dbError);
     }
 
-    const [rows] = await db.execute(`SELECT tagName FROM Tag ORDER BY tagName ASC`);
-    const tags = (rows as any[]).map((row) => row.tagName as string);
-
-    return NextResponse.json({ tags });
+    return NextResponse.json({ tags: dbTags ?? uniqueTags });
   } catch (error) {
     console.error("Failed to load tags from CSV:", error);
-    return NextResponse.json({ error: "Failed to load tags" }, { status: 500 });
+    return NextResponse.json({ tags: [] });
   }
 }
