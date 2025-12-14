@@ -4,8 +4,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import { Combobox } from "@headlessui/react";
+import Header from "../Header";
+import { useSession } from "next-auth/react";
 
 export default function UploadPage() {
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -105,6 +108,7 @@ export default function UploadPage() {
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
         Upload Resources
       </h1>
+      <Header user={{name: session?.user?.name || "Admin", email: session?.user?.email || "", picture: session?.user?.image || ""}}/> 
       <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">
         By choosing to upload to the Merrimack College Community Research Page,
         you give permission for other users to view and download your work.

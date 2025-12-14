@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Header from "@/app/components/Header";
 import { Geist, Geist_Mono } from "next/font/google";
 import SessionProviderWrapper from "@/app/components/SessionProviderWrapper";
 import "./globals.css";
@@ -28,7 +29,10 @@ export default function RootLayout({ children, user }: RootLayoutProps) {
     <html lang="en">
       <body className="min-h-screen flex flex-col">
         <div className="bg-[#F4F2ED] flex-1 w-full">
-          <SessionProviderWrapper>{children}</SessionProviderWrapper>
+          <SessionProviderWrapper>
+            <Header />
+            {children}
+          </SessionProviderWrapper>
         </div>
       </body>
     </html>

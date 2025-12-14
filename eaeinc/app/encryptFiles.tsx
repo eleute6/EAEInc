@@ -26,3 +26,10 @@ export function encryptFileBuffer(fileBuffer: Buffer, key: Buffer): Buffer {
     // COMBINE IV, AUTH TAG, AND ENCRYPTED DATA
     return Buffer.concat([iv, authTag, encrypted]);
 }
+
+/* EXAMPLE CALL FOR ENCRYPTION: */
+/* const file = await fs.readFile("downloaded.pdf");
+
+const encrypted = encryptFileBuffer(file, ENCRYPTION_KEY);
+
+await fs.writeFile("stored/encrypted_file.bin", encrypted);*/
