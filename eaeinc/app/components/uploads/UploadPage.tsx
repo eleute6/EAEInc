@@ -18,23 +18,37 @@ export default function UploadPage() {
 
   const [showPopup, setShowPopup] = useState(false);
   const [query, setQuery] = useState("");
+  const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
+  const [isLoadingKeywords, setIsLoadingKeywords] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => fileInputRef.current?.click();
 
-  const preapprovedKeywords = [
-    "AI",
-    "Allowable Costs",
-    "Auditing",
-    "Award",
-    "Budget",
-    "Budget Justification",
-    "Budget Narrative",
-  ];
+  useEffect(() => {
+    const fetchKeywords = async () => {
+      try {
+        const response = await fetch("/api/tag");
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableKeywords(data.tags || []);
+        } else {
+          console.error("Failed to load keywords");
+        }
+      } catch (error) {
+        console.error("Error fetching keywords", error);
+      } finally {
+        setIsLoadingKeywords(false);
+      }
+    };
+
+    fetchKeywords();
+  }, []);
+
+
   const filteredKeywords =
     query === ""
-      ? preapprovedKeywords
-      : preapprovedKeywords.filter((kw) =>
+      ? availableKeywords
+      : availableKeywords.filter((kw) =>
           kw.toLowerCase().includes(query.toLowerCase())
         );
 
@@ -188,7 +202,12 @@ export default function UploadPage() {
                 required
               />
               <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg z-10">
-                {filteredKeywords.length === 0 && (
+                {isLoadingKeywords && (
+                  <div className="cursor-default select-none px-4 py-2 text-gray-500">
+                    Loading keywords...
+                  </div>
+                )}
+                {!isLoadingKeywords && filteredKeywords.length === 0 && (
                   <div className="cursor-default select-none px-4 py-2 text-gray-500">
                     No results found.
                   </div>
