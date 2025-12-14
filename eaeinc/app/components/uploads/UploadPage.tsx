@@ -27,7 +27,7 @@ export default function UploadPage() {
   useEffect(() => {
     const fetchKeywords = async () => {
       try {
-        const response = await fetch("/api/tags");
+        const response = await fetch("/api/tag");
         if (response.ok) {
           const data = await response.json();
           setAvailableKeywords(data.tags || []);
