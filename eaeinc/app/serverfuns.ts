@@ -40,6 +40,7 @@ interface Comments {
   forumID: number;
   emailID: string;
   body: string;
+  userName: string;
 }
 /* USER INFO FETCHING */
 
@@ -244,13 +245,14 @@ export async function sendComment(fData: FormData) {
   const forumID = fData.get("forumID");
   const body = fData.get("body") as string;
   const emailID = fData.get("emailID") as string;
+  const userName = fData.get("userName") as string;
 
   // STEP 2: Send data to backend
   try {
     //Try to send to database the new comment.
     await db.execute(
-      "INSERT INTO ForumComment (forumID, emailID, body) VALUES (?, ?, ?)", //All manually filled information for a comment.
-      [forumID, emailID, body] //The values to insert into the database.
+      "INSERT INTO ForumComment (forumID, emailID, body, userName) VALUES (?, ?, ?, ?)", //All manually filled information for a comment.
+      [forumID, emailID, body, userName] //The values to insert into the database.
     );
   } catch (err: any) {
     // Usual error catching.
@@ -317,7 +319,7 @@ export async function fetchPosts(currentUserEmail: string) {
 
         // Fetch comments
         const [comments] = await db.execute(
-          `SELECT commentID, body, emailID 
+          `SELECT commentID, body, emailID, userName
            FROM ForumComment 
            WHERE forumID = ? AND isDeleted = 0`,
           [row.forumID]
@@ -339,6 +341,7 @@ export async function fetchPosts(currentUserEmail: string) {
             id: c.commentID,
             text: c.body,
             userEmail: c.emailID,
+            userName: c.userName
           })),
         };
       })
@@ -670,11 +673,11 @@ export async function likePost(postId: number, email: string) {
   }
 }
 
-export async function addComment(postId: number, text: string, email: string) {
+export async function addComment(postId: number, text: string, email: string, userName: string) {
   try {
     const [result] = await db.execute(
-      `INSERT INTO ForumComment (forumID, emailID, body) VALUES (?, ?, ?)`,
-      [postId, email, text]
+      `INSERT INTO ForumComment (forumID, emailID, body, userName) VALUES (?, ?, ?, ?)`,
+      [postId, email, text, userName]
     );
 
     const commentId = (result as any).insertId;
@@ -683,6 +686,7 @@ export async function addComment(postId: number, text: string, email: string) {
       id: commentId,
       text,
       userEmail: email,
+      userName,
     };
   } catch (err) {
     console.error("addComment error:", err);

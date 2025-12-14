@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { fetchConsortiumAll } from "@/app/serverfuns";
+import Header from "../Header";
+import { useSession } from "next-auth/react";
 
 export interface Upload {
   id: number;
@@ -15,6 +17,7 @@ export interface Upload {
 }
 
 export default function InstrumentConsortium() {
+    const { data: session } = useSession();
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [query, setQuery] = useState("");
 
@@ -47,6 +50,7 @@ export default function InstrumentConsortium() {
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
         Instrument Consortium
       </h1>
+      <Header user={{name: session?.user?.name || "Admin", email: session?.user?.email || "", picture: session?.user?.image || ""}}/>
       <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">
         Use the search bar to filter by keywords or titles to find specific
         documents.

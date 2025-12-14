@@ -30,7 +30,7 @@ export interface Post {
   };
   likes?: number;
   likedByUser: boolean;
-  comments?: { id: number; text: string; userEmail: string }[];
+  comments?: { id: number; text: string; userEmail: string, userName: string}[]; 
 }
 
 interface PostForumProps {
@@ -127,7 +127,7 @@ export default function PostForum({ user }: PostForumProps) {
   const handleComment = async (postId: number) => {
     const text = commentInputs[postId]?.trim();
     if (!text) return;
-    const newComment = await addComment(postId, text, user.email);
+    const newComment = await addComment(postId, text, user.email, user.name);
     if (newComment) {
       setPosts((prev) =>
         prev.map((p) =>

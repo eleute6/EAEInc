@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Header from "../Header";
+
 import {
   CalendarDays,
   MapPin,
@@ -108,6 +110,8 @@ export default function AdminPage() {
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
         Admin Dashboard
       </h1>
+
+      <Header user={{name: session?.user?.name || "Admin", email: session?.user?.email || "", picture: session?.user?.image || ""}} />
 
       {/* Create Event Section */}
       <section className="space-y-6">
