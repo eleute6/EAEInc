@@ -70,7 +70,7 @@ create table ForumComment (
     postedAt timestamp not null default current_timestamp,
     isDeleted boolean default 0,
     foreign key (forumID) references Forum(forumID) on delete cascade,
-    foreign key (emailID) references UserInfo(emailID) on delete cascade,
+    foreign key (emailID) references UserInfo(emailID) on delete cascade
 );
 
 
@@ -107,7 +107,7 @@ CREATE TABLE ForumLikes (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_like (forumID, emailID),
     FOREIGN KEY (forumID) REFERENCES Forum(forumID),
-    FOREIGN KEY (emailID) REFERENCES UserInfo(emailID),
+    FOREIGN KEY (emailID) REFERENCES UserInfo(emailID)
 );
 
 CREATE TABLE UploadRequest (
