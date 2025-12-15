@@ -545,14 +545,22 @@ export async function fetchConsortiumUser(email: string) {
 /* FETCHCONSORTIUMTAG */
 /*  Function used to retrieve consortium
     members based on a specific tag.  */
-export async function fetchConsortiumTag(tag: string) {
-  const [rows] = await db.execute(
-    "SELECT * FROM Instrument WHERE tags LIKE ? ORDER BY instrumentID DESC",
-    [`%${tag}%`]
-  ); //Gets all items with the specified tag.
+export async function fetchConsortiumTag(tags: string[]) {
+  // Return empty array if no tags provided
+  if (tags.length === 0) return [];
 
-  // STEP 2: Construct Instruments Array
-  const instruments: Instruments[] = (rows as any[]).map((row) => ({
+  // Check boolean conditions for each tag
+  const conditions = tags.map(() => `tags LIKE ?`).join(" AND ");
+  const values = tags.map((tag) => `%${tag}%`);
+
+  // Retrieve the rows from the database
+  const [rows] = await db.execute(
+    `SELECT * FROM Instrument WHERE ${conditions} ORDER BY instrumentID DESC`,
+    values
+  );
+
+  // Map DB rows into Instruments objects and return
+  return (rows as any[]).map((row) => ({
     id: row.instrumentID,
     title: row.title,
     description: row.description,
@@ -560,21 +568,25 @@ export async function fetchConsortiumTag(tag: string) {
     upload: row.uploadedAt,
     filePath: row.fileURL,
   }));
-
-  // STEP 3: Return Instruments Array
-  return instruments;
 }
 
 /* FETCHCONSORTIUMTAGNEXT */
 /*  Function used to retrieve the next set of consortium
     members based on a specific tag.  */
 export async function fetchConsortiumTagNext(
-  tag: string,
+  tags: string[],
   lastInstrumentID: number
 ) {
+  // STEP 1 : Sanitize Tags
+  if (tags.length === 0) return [];
+
+  // Check boolean conditions for each tag
+  const conditions = tags.map(() => `tags LIKE ?`).join(" AND ");
+  const values = tags.map((tag) => `%${tag}%`);
+
   const [rows] = await db.execute(
-    "SELECT * FROM Instrument WHERE tags LIKE ? AND instrumentID > ? ORDER BY instrumentID DESC",
-    [`%${tag}%`, lastInstrumentID]
+    "SELECT * FROM Instrument WHERE ${conditions} AND instrumentID < ? ORDER BY instrumentID DESC",
+    [values, lastInstrumentID]
   ); //Gets the next set of items with the specified tag.
 
   // STEP 2: Construct Instruments Array

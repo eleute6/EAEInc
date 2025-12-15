@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
-import { fetchConsortiumAll } from "@/app/serverfuns";
+import { fetchConsortiumAll, fetchConsortiumTag } from "@/app/serverfuns";
 import Header from "../Header";
 import { useSession } from "next-auth/react";
 
@@ -17,9 +17,10 @@ export interface Upload {
 }
 
 export default function InstrumentConsortium() {
-    const { data: session } = useSession();
+  const { data: session } = useSession();
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [query, setQuery] = useState("");
+
 
   useEffect(() => {
     const loadUploads = async () => {
@@ -38,6 +39,42 @@ export default function InstrumentConsortium() {
     };
     loadUploads();
   }, []);
+
+  // MAP INSTRUMENTS FOR QUERY CHANGE 
+  // (it's pretty much the same as above, but written separately for clarity)
+  const mapInstruments = (instruments: any[]) =>
+    instruments.map((inst) => ({
+      id: inst.id,
+      title: inst.title,
+      description: inst.description,
+      keywords: inst.tags || [],
+      author: inst.emailID,
+      date: new Date(inst.upload).toLocaleDateString(),
+      filePath: inst.filePath,
+    }));
+
+  const handleQueryChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Set the query to match the input value
+    const value = e.target.value;
+    setQuery(value);
+
+    // Split the query into tags
+    const tags = value
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+
+    // If the tags are empty, fetch all uploads
+    if (tags.length === 0) {
+    const instruments = await fetchConsortiumAll();
+    setUploads(mapInstruments(instruments));
+    return;
+    }
+
+    // Fetch uploads matching the tags
+    const instruments = await fetchConsortiumTag(tags);
+    setUploads(mapInstruments(instruments));
+  };
 
   const filteredUploads = uploads.filter(
     (u) =>
@@ -63,17 +100,17 @@ export default function InstrumentConsortium() {
           type="text"
           placeholder="Search by keyword or title..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={handleQueryChange}
           className="flex-1 bg-transparent outline-none placeholder-gray-400"
         />
       </div>
 
       {/* Upload List */}
       <div className="space-y-4">
-        {filteredUploads.length === 0 ? (
+        {uploads.length === 0 ? (
           <p className="text-gray-500">No uploads found.</p>
         ) : (
-          filteredUploads.map((upload) => (
+          uploads.map((upload) => (
             <div
               key={upload.id}
               className="border border-[#002855]/20 rounded-md p-4 shadow-sm hover:shadow-md transition"
