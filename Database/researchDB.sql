@@ -71,7 +71,6 @@ create table ForumComment (
     isDeleted boolean default 0,
     foreign key (forumID) references Forum(forumID) on delete cascade,
     foreign key (emailID) references UserInfo(emailID) on delete cascade,
-    foreign key (userName) references UserInfo(userName) on delete cascade
 );
 
 
@@ -109,7 +108,6 @@ CREATE TABLE ForumLikes (
     UNIQUE KEY unique_like (forumID, emailID),
     FOREIGN KEY (forumID) REFERENCES Forum(forumID),
     FOREIGN KEY (emailID) REFERENCES UserInfo(emailID),
-    FOREIGN KEY (userName) REFERENCES UserInfo(userName)
 );
 
 CREATE TABLE UploadRequest (
