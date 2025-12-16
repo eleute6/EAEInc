@@ -66,7 +66,7 @@ export async function fetchInfoSmall(email: string) {
     const row = (rows as any[])[0];
     const user: User = {
       name: row.userName || "Unknown User",
-      picture: row.pictureURL || "",
+      image: row.pictureURL || "",
       email,
     };
     return user;
@@ -137,10 +137,10 @@ export async function fetchInfoFull(email: string) {
 export async function initialUserInfo(
   name: string,
   email: string,
-  picture: string | null,
+  image: string | null,
   admin: boolean
 ) {
-  console.log("initialUserInfo called with:", { name, email, picture, admin });
+  console.log("initialUserInfo called with:", { name, email, image, admin });
 
   try {
     const [rows] = await db.execute(
@@ -149,13 +149,9 @@ export async function initialUserInfo(
     );
     const existing = (rows as any[]).length > 0 ? (rows as any[])[0] : null;
 
+    const finalPicture = image ?? "/default-avatar.png"; // never allow ""
+
     if (!existing) {
-      console.log("No existing user, inserting new:", email);
-
-      // ✅ Use Google image if provided, otherwise fallback
-      const finalPicture =
-        picture && picture.trim() !== "" ? picture : "/default-avatar.png";
-
       await db.execute(
         `INSERT INTO UserInfo 
           (userName, emailID, pictureURL, bio, department, currentContributionScore, highestContributionScore, isAdmin) 
@@ -171,26 +167,17 @@ export async function initialUserInfo(
           admin,
         ]
       );
-      console.log("Inserted new user:", email);
     } else {
-      console.log("Existing user found:", existing);
-
       const needsUpdate =
         existing.userName === "New User" ||
         !existing.pictureURL ||
         existing.pictureURL.trim() === "";
 
       if (needsUpdate) {
-        console.log("Updating existing user:", email);
-
-        const finalPicture =
-          picture && picture.trim() !== "" ? picture : "/default-avatar.png";
-
         await db.execute(
           "UPDATE UserInfo SET userName = ?, pictureURL = ? WHERE emailID = ?",
           [name, finalPicture, email]
         );
-        console.log("Updated existing user:", email);
       }
     }
   } catch (err: any) {
@@ -226,14 +213,15 @@ export async function updateUserInfo(fData: FormData) {
     score in the database based on their email.    */
 export async function updateContributionScore(email: string, score: number) {
   try {
-    //STEP 1: Update database with new contribution score.
     await db.execute(
-      "UPDATE UserInfo SET currentContributionScore = currentContributionScore + ? WHERE emailID = ?",
-      [score, email]
+      `UPDATE UserInfo 
+       SET currentContributionScore = currentContributionScore + ?,
+           highestContributionScore = GREATEST(highestContributionScore, currentContributionScore + ?)
+       WHERE emailID = ?`,
+      [score, score, email]
     );
   } catch (err: any) {
-    // Usual error catching.
-    console.error(err);
+    console.error("Error in updateContributionScore:", err);
   }
 }
 
@@ -274,15 +262,16 @@ export async function sendPost(post: Post) {
 
     const insertedId = (result as any).insertId;
 
-    // Return a fully shaped Post object
+    await updateContributionScore(post.user.email, 3);
+
     return {
       id: insertedId,
       text: post.text,
       image: post.image,
       likes: 0,
-      likedByUser: false, // new posts start unliked
+      likedByUser: false,
       user: post.user,
-      comments: [], // no comments yet
+      comments: [],
     };
   } catch (err) {
     console.error("sendPost error:", err);
@@ -341,7 +330,7 @@ export async function fetchPosts(currentUserEmail: string) {
             id: c.commentID,
             text: c.body,
             userEmail: c.emailID,
-            userName: c.userName
+            userName: c.userName,
           })),
         };
       })
@@ -637,7 +626,6 @@ export async function fetchFile(fileName: string) {
 
 export async function likePost(postId: number, email: string) {
   try {
-    // 1. Check whether this user already liked it
     const [exists] = await db.execute(
       `SELECT * FROM ForumLikes WHERE forumID = ? AND emailID = ?`,
       [postId, email]
@@ -646,30 +634,30 @@ export async function likePost(postId: number, email: string) {
     const alreadyLiked = (exists as any[]).length > 0;
 
     if (alreadyLiked) {
-      // 2. Remove like (UNLIKE)
+      // Unlike
       await db.execute(
         `DELETE FROM ForumLikes WHERE forumID = ? AND emailID = ?`,
         [postId, email]
       );
-
       await db.execute(
         `UPDATE Forum SET likeCount = likeCount - 1 WHERE forumID = ?`,
         [postId]
       );
     } else {
-      // 3. Add like (LIKE)
+      // Like
       await db.execute(
-        `INSERT INTO ForumLikes (forumID, emailID) VALUES (?, ?)`,
-        [postId, email]
+        `INSERT INTO ForumLikes (forumID, emailID, userName) VALUES (?, ?, ?)`,
+        [postId, email, ""] // add userName if needed
       );
-
       await db.execute(
         `UPDATE Forum SET likeCount = likeCount + 1 WHERE forumID = ?`,
         [postId]
       );
+
+      // ✅ Add contribution points
+      await updateContributionScore(email, 2);
     }
 
-    // 4. Return updated like count + whether THIS user liked it
     const [rows] = await db.execute(
       `SELECT likeCount FROM Forum WHERE forumID = ?`,
       [postId]
@@ -677,7 +665,7 @@ export async function likePost(postId: number, email: string) {
 
     return {
       likes: (rows as any[])[0].likeCount,
-      liked: !alreadyLiked, // flip state
+      liked: !alreadyLiked,
     };
   } catch (err) {
     console.error("Error in likePost:", err);
@@ -685,7 +673,12 @@ export async function likePost(postId: number, email: string) {
   }
 }
 
-export async function addComment(postId: number, text: string, email: string, userName: string) {
+export async function addComment(
+  postId: number,
+  text: string,
+  email: string,
+  userName: string
+) {
   try {
     const [result] = await db.execute(
       `INSERT INTO ForumComment (forumID, emailID, body, userName) VALUES (?, ?, ?, ?)`,
@@ -693,6 +686,8 @@ export async function addComment(postId: number, text: string, email: string, us
     );
 
     const commentId = (result as any).insertId;
+
+    await updateContributionScore(email, 2);
 
     return {
       id: commentId,
@@ -856,4 +851,99 @@ export async function rejectUploadRequest(requestID: number) {
     `UPDATE UploadRequest SET status = 'rejected' WHERE requestID = ?`,
     [requestID]
   );
+}
+
+export async function fetchLeaderboard(limit: number = 10) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT userName, emailID, pictureURL, currentContributionScore, highestContributionScore
+       FROM UserInfo
+       ORDER BY currentContributionScore DESC
+       LIMIT ${limit}` // nterpolate directly
+    );
+
+    return rows as {
+      userName: string;
+      emailID: string;
+      pictureURL: string;
+      currentContributionScore: number;
+      highestContributionScore: number;
+    }[];
+  } catch (err: any) {
+    console.error("Error in fetchLeaderboard:", err);
+    return [];
+  }
+}
+
+export async function searchUsers(query: string) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT userName, emailID, pictureURL 
+       FROM UserInfo 
+       WHERE LOWER(userName) LIKE LOWER(?) 
+          OR LOWER(emailID) LIKE LOWER(?)
+       LIMIT 10`,
+      [`%${query}%`, `%${query}%`]
+    );
+
+    return (rows as any[]).map((row) => ({
+      name: row.userName,
+      email: row.emailID,
+      image: row.pictureURL || "/default-avatar.png",
+    }));
+  } catch (err: any) {
+    console.error("Error in searchUsers:", err);
+    return [];
+  }
+}
+
+export async function fetchUserByEmail(email: string) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT userName, emailID, pictureURL, department, bio, currentContributionScore, highestContributionScore
+       FROM UserInfo
+       WHERE emailID = ?`,
+      [email]
+    );
+
+    if ((rows as any[]).length === 0) return null;
+
+    const row = (rows as any[])[0];
+    return {
+      name: row.userName,
+      email: row.emailID,
+      image: row.pictureURL || "/default-avatar.png",
+      department: row.department,
+      bio: row.bio,
+      currentScore: row.currentContributionScore,
+      highestScore: row.highestContributionScore,
+    };
+  } catch (err: any) {
+    console.error("Error in fetchUserByEmail:", err);
+    return null;
+  }
+}
+
+export async function fetchApprovedUploadsByUser(email: string) {
+  if (!email) return [];
+  try {
+    const [rows] = await db.execute(
+      `SELECT requestID, fileName, description, fileURL, submittedAt
+       FROM UploadRequest
+       WHERE email = ? AND status = 'approved'
+       ORDER BY submittedAt DESC`,
+      [email]
+    );
+
+    return (rows as any[]).map((row) => ({
+      id: row.requestID,
+      name: row.fileName,
+      description: row.description,
+      file: row.fileURL,
+      date: row.submittedAt,
+    }));
+  } catch (err: any) {
+    console.error("Error in fetchApprovedUploadsByUser:", err);
+    return [];
+  }
 }

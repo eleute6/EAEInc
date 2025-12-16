@@ -9,7 +9,7 @@ interface PostCreatorProps {
   user: {
     name: string;
     email: string;
-    picture: string;
+    image: string;
   };
   onClose: () => void;
 }
@@ -21,7 +21,7 @@ export default function PostCreator({ user, onClose }: PostCreatorProps) {
 
   const firstName = user.name.split(" ")[0];
   const lastName = user.name.split(" ")[1] || "";
-  const userObj = { firstName, lastName, imageUrl: user.picture };
+  const userObj = { firstName, lastName, imageUrl: user.image };
 
   const handlePostAction = async (formData: FormData) => {
     const text = (formData.get("postInput") as string)?.trim();

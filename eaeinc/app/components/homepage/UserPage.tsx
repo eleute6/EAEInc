@@ -9,14 +9,14 @@ import { fetchPosts } from "@/app/serverfuns";
 interface User {
   name: string;
   email: string;
-  picture: string;
+  image: string;
 }
 
 interface Props {
   user: User;
 }
 
-export default  function UserPage({ user }: Props) {
+export default function UserPage({ user }: Props) {
   return (
     <>
       {/* Header at the top */}
@@ -26,7 +26,7 @@ export default  function UserPage({ user }: Props) {
       <main className="mt-[120px] grid grid-cols-8 sm:px-5 gap-6">
         {/* Left sidebar: user info + leaderboard */}
         <section className="hidden lg:flex lg:flex-col lg:col-span-2 space-y-8">
-          <UserInformation user={user} />
+          <UserInformation />
           <ContributionLeaderboard />
         </section>
 
