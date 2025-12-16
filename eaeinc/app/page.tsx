@@ -7,7 +7,7 @@ import UserPage from "@/app/components//homepage/UserPage"; // make sure the pat
 interface User {
   name: string;
   email: string;
-  picture: string;
+  image: string;
 }
 
 declare global {
@@ -34,7 +34,7 @@ export default function Home() {
         user={{
           name: session.user.name!,
           email: session.user.email!,
-          picture: session.user.image!,
+          image: session.user.image!,
         }}
       />
     );

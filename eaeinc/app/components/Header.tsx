@@ -9,7 +9,7 @@ interface HeaderProps {
   user?: {
     name: string;
     email: string;
-    picture: string /* isAdmin?: boolean */;
+    image: string /* isAdmin?: boolean */;
   } | null;
 }
 
@@ -81,10 +81,12 @@ export default function Header({ user }: HeaderProps) {
           {/* User Info */}
           {user && (
             <div className="ml-6 flex items-center space-x-2">
-              <img
-                src={user.picture}
+              <Image
+                src={user.image}
                 alt={user.name}
-                className="w-8 h-8 rounded-full border-2 border-[#FFC72C]"
+                width={32}
+                height={32}
+                className="rounded-full border-2 border-[#FFC72C]"
               />
               <span className="text-sm font-semibold">{user.name}</span>
             </div>

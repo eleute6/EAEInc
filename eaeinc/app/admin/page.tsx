@@ -7,7 +7,7 @@ import AdminPage from "../components/admin/AdminPage"; // adjust path to where y
 interface User {
   name: string;
   email: string;
-  picture: string;
+  image: string;
   // isAdmin?: boolean  <-- you can add this back later
 }
 

@@ -30,11 +30,16 @@ export interface Post {
   };
   likes?: number;
   likedByUser: boolean;
-  comments?: { id: number; text: string; userEmail: string, userName: string}[]; 
+  comments?: {
+    id: number;
+    text: string;
+    userEmail: string;
+    userName: string;
+  }[];
 }
 
 interface PostForumProps {
-  user: { name: string; email: string; picture: string };
+  user: { name: string; email: string; image: string };
 }
 
 const NAV_HEIGHT_PX = 64;
@@ -52,7 +57,7 @@ export default function PostForum({ user }: PostForumProps) {
   const firstName = user.name.split(" ")[0];
   const lastName = user.name.split(" ")[1] || "";
   const email = user.email;
-  const userObj = { firstName, lastName, imageUrl: user.picture, email };
+  const userObj = { firstName, lastName, imageUrl: user.image, email };
 
   const [confirmDeletePostId, setConfirmDeletePostId] = useState<number | null>(
     null

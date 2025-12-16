@@ -7,7 +7,7 @@ import UploadPage from "../components/uploads/UploadPage";
 interface User {
   name: string;
   email: string;
-  picture: string;
+  image: string;
 }
 
 export default function UploadsPage() {

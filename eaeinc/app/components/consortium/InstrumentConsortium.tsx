@@ -21,7 +21,6 @@ export default function InstrumentConsortium() {
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [query, setQuery] = useState("");
 
-
   useEffect(() => {
     const loadUploads = async () => {
       const instruments = await fetchConsortiumAll();
@@ -40,7 +39,7 @@ export default function InstrumentConsortium() {
     loadUploads();
   }, []);
 
-  // MAP INSTRUMENTS FOR QUERY CHANGE 
+  // MAP INSTRUMENTS FOR QUERY CHANGE
   // (it's pretty much the same as above, but written separately for clarity)
   const mapInstruments = (instruments: any[]) =>
     instruments.map((inst) => ({
@@ -59,16 +58,13 @@ export default function InstrumentConsortium() {
     setQuery(value);
 
     // Split the query into tags
-    const tags = value
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean);
+    const tags = value.toLowerCase().split(/\s+/).filter(Boolean);
 
     // If the tags are empty, fetch all uploads
     if (tags.length === 0) {
-    const instruments = await fetchConsortiumAll();
-    setUploads(mapInstruments(instruments));
-    return;
+      const instruments = await fetchConsortiumAll();
+      setUploads(mapInstruments(instruments));
+      return;
     }
 
     // Fetch uploads matching the tags
@@ -87,7 +83,13 @@ export default function InstrumentConsortium() {
       <h1 className="text-3xl font-bold text-[#002855] border-b-2 border-[#FFC72C] pb-2">
         Instrument Consortium
       </h1>
-      <Header user={{name: session?.user?.name || "Admin", email: session?.user?.email || "", picture: session?.user?.image || ""}}/>
+      <Header
+        user={{
+          name: session?.user?.name || "Admin",
+          email: session?.user?.email || "",
+          image: session?.user?.image || "",
+        }}
+      />
       <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">
         Use the search bar to filter by keywords or titles to find specific
         documents.

@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import { Button } from "../../ui/button";
 import PostCreator from "./PostCreator";
 import EditProfile from "./EditProfile";
+import Image from "next/image";
 
 export interface User {
   name: string;
   email: string;
-  picture: string;
+  image: string;
 }
 
 interface Props {
@@ -17,7 +18,7 @@ interface Props {
 export default function UserInformation({ user }: Props) {
   const [firstName, ...rest] = user.name.split(" ");
   const lastName = rest.join(" ");
-  const imageUrl = user.picture;
+  const imageUrl = user.image;
 
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -26,8 +27,14 @@ export default function UserInformation({ user }: Props) {
     <div className="flex flex-col justify-center items-center bg-white mr-6 rounded-lg border border-gray-200 py-6 px-6 space-y-3 shadow-sm">
       {/* Avatar */}
       <Avatar className="w-20 h-20">
-        {imageUrl ? (
-          <AvatarImage src={imageUrl} />
+        {user.image ? (
+          <Image
+            src={user.image}
+            alt={user.name}
+            width={80}
+            height={80}
+            className="rounded-full object-cover"
+          />
         ) : (
           <AvatarFallback className="flex items-center justify-center bg-[#003768] text-white font-bold w-full h-full rounded-full">
             {firstName.charAt(0)}

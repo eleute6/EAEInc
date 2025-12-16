@@ -9,7 +9,7 @@ interface EditProfileProps {
   user: {
     name: string;
     email: string;
-    picture: string;
+    image: string;
   };
   onClose: () => void;
 }
@@ -18,7 +18,7 @@ export default function EditProfile({ user, onClose }: EditProfileProps) {
   const [firstName, setFirstName] = useState(user.name.split(" ")[0]);
   const [lastName, setLastName] = useState(user.name.split(" ")[1] || "");
   const [department, setDepartment] = useState("");
-  const [preview, setPreview] = useState<string | null>(user.picture || null);
+  const [preview, setPreview] = useState<string | null>(user.image || null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

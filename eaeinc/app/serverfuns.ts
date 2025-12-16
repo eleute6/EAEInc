@@ -66,7 +66,7 @@ export async function fetchInfoSmall(email: string) {
     const row = (rows as any[])[0];
     const user: User = {
       name: row.userName || "Unknown User",
-      picture: row.pictureURL || "",
+      image: row.pictureURL || "",
       email,
     };
     return user;
@@ -137,10 +137,10 @@ export async function fetchInfoFull(email: string) {
 export async function initialUserInfo(
   name: string,
   email: string,
-  picture: string | null,
+  image: string | null,
   admin: boolean
 ) {
-  console.log("initialUserInfo called with:", { name, email, picture, admin });
+  console.log("initialUserInfo called with:", { name, email, image, admin });
 
   try {
     const [rows] = await db.execute(
@@ -149,13 +149,9 @@ export async function initialUserInfo(
     );
     const existing = (rows as any[]).length > 0 ? (rows as any[])[0] : null;
 
+    const finalPicture = image ?? "/default-avatar.png"; // never allow ""
+
     if (!existing) {
-      console.log("No existing user, inserting new:", email);
-
-      // ✅ Use Google image if provided, otherwise fallback
-      const finalPicture =
-        picture && picture.trim() !== "" ? picture : "/default-avatar.png";
-
       await db.execute(
         `INSERT INTO UserInfo 
           (userName, emailID, pictureURL, bio, department, currentContributionScore, highestContributionScore, isAdmin) 
@@ -171,26 +167,17 @@ export async function initialUserInfo(
           admin,
         ]
       );
-      console.log("Inserted new user:", email);
     } else {
-      console.log("Existing user found:", existing);
-
       const needsUpdate =
         existing.userName === "New User" ||
         !existing.pictureURL ||
         existing.pictureURL.trim() === "";
 
       if (needsUpdate) {
-        console.log("Updating existing user:", email);
-
-        const finalPicture =
-          picture && picture.trim() !== "" ? picture : "/default-avatar.png";
-
         await db.execute(
           "UPDATE UserInfo SET userName = ?, pictureURL = ? WHERE emailID = ?",
           [name, finalPicture, email]
         );
-        console.log("Updated existing user:", email);
       }
     }
   } catch (err: any) {
@@ -341,7 +328,7 @@ export async function fetchPosts(currentUserEmail: string) {
             id: c.commentID,
             text: c.body,
             userEmail: c.emailID,
-            userName: c.userName
+            userName: c.userName,
           })),
         };
       })
@@ -685,7 +672,12 @@ export async function likePost(postId: number, email: string) {
   }
 }
 
-export async function addComment(postId: number, text: string, email: string, userName: string) {
+export async function addComment(
+  postId: number,
+  text: string,
+  email: string,
+  userName: string
+) {
   try {
     const [result] = await db.execute(
       `INSERT INTO ForumComment (forumID, emailID, body, userName) VALUES (?, ?, ?, ?)`,

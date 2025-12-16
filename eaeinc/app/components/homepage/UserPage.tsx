@@ -9,14 +9,14 @@ import { fetchPosts } from "@/app/serverfuns";
 interface User {
   name: string;
   email: string;
-  picture: string;
+  image: string;
 }
 
 interface Props {
   user: User;
 }
 
-export default  function UserPage({ user }: Props) {
+export default function UserPage({ user }: Props) {
   return (
     <>
       {/* Header at the top */}

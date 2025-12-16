@@ -111,7 +111,13 @@ export default function AdminPage() {
         Admin Dashboard
       </h1>
 
-      <Header user={{name: session?.user?.name || "Admin", email: session?.user?.email || "", picture: session?.user?.image || ""}} />
+      <Header
+        user={{
+          name: session?.user?.name || "Admin",
+          email: session?.user?.email || "",
+          image: session?.user?.image || "",
+        }}
+      />
 
       {/* Create Event Section */}
       <section className="space-y-6">
