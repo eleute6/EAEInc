@@ -67,6 +67,9 @@ export default async function ProfilePage(props: {
           <p className="text-gray-600">{user.email}</p>
         </div>
       </div>
+      <p className="text-gray-600">
+        Department: {user.department || "Not provided"}
+      </p>
       <p className="mt-4">{user.bio || "No bio provided."}</p>
     </div>
   );
