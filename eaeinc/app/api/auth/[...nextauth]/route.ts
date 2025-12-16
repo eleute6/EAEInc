@@ -105,6 +105,8 @@ const handler = NextAuth({
             name: userData.name,
             email: userData.email,
             image: userData.image,
+            department: userData.department,
+            bio: userData.bio,
           };
           console.log("Updated session.user with DB values:", session.user);
         } else {
