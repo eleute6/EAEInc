@@ -923,3 +923,27 @@ export async function fetchUserByEmail(email: string) {
     return null;
   }
 }
+
+export async function fetchApprovedUploadsByUser(email: string) {
+  if (!email) return [];
+  try {
+    const [rows] = await db.execute(
+      `SELECT requestID, fileName, description, fileURL, submittedAt
+       FROM UploadRequest
+       WHERE email = ? AND status = 'approved'
+       ORDER BY submittedAt DESC`,
+      [email]
+    );
+
+    return (rows as any[]).map((row) => ({
+      id: row.requestID,
+      name: row.fileName,
+      description: row.description,
+      file: row.fileURL,
+      date: row.submittedAt,
+    }));
+  } catch (err: any) {
+    console.error("Error in fetchApprovedUploadsByUser:", err);
+    return [];
+  }
+}

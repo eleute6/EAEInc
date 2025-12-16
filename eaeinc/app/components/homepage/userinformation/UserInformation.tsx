@@ -110,7 +110,7 @@ export default function UserInformation() {
             <EditProfile
               user={displayUser}
               onClose={() => setShowEditProfile(false)}
-              onUserUpdated={setUser} // ✅ updates local state immediately
+              onUserUpdated={setUser}
             />
           </div>
         </div>
