@@ -213,14 +213,15 @@ export async function updateUserInfo(fData: FormData) {
     score in the database based on their email.    */
 export async function updateContributionScore(email: string, score: number) {
   try {
-    //STEP 1: Update database with new contribution score.
     await db.execute(
-      "UPDATE UserInfo SET currentContributionScore = currentContributionScore + ? WHERE emailID = ?",
-      [score, email]
+      `UPDATE UserInfo 
+       SET currentContributionScore = currentContributionScore + ?,
+           highestContributionScore = GREATEST(highestContributionScore, currentContributionScore + ?)
+       WHERE emailID = ?`,
+      [score, score, email]
     );
   } catch (err: any) {
-    // Usual error catching.
-    console.error(err);
+    console.error("Error in updateContributionScore:", err);
   }
 }
 
@@ -261,15 +262,16 @@ export async function sendPost(post: Post) {
 
     const insertedId = (result as any).insertId;
 
-    // Return a fully shaped Post object
+    await updateContributionScore(post.user.email, 3);
+
     return {
       id: insertedId,
       text: post.text,
       image: post.image,
       likes: 0,
-      likedByUser: false, // new posts start unliked
+      likedByUser: false,
       user: post.user,
-      comments: [], // no comments yet
+      comments: [],
     };
   } catch (err) {
     console.error("sendPost error:", err);
@@ -624,7 +626,6 @@ export async function fetchFile(fileName: string) {
 
 export async function likePost(postId: number, email: string) {
   try {
-    // 1. Check whether this user already liked it
     const [exists] = await db.execute(
       `SELECT * FROM ForumLikes WHERE forumID = ? AND emailID = ?`,
       [postId, email]
@@ -633,30 +634,30 @@ export async function likePost(postId: number, email: string) {
     const alreadyLiked = (exists as any[]).length > 0;
 
     if (alreadyLiked) {
-      // 2. Remove like (UNLIKE)
+      // Unlike
       await db.execute(
         `DELETE FROM ForumLikes WHERE forumID = ? AND emailID = ?`,
         [postId, email]
       );
-
       await db.execute(
         `UPDATE Forum SET likeCount = likeCount - 1 WHERE forumID = ?`,
         [postId]
       );
     } else {
-      // 3. Add like (LIKE)
+      // Like
       await db.execute(
-        `INSERT INTO ForumLikes (forumID, emailID) VALUES (?, ?)`,
-        [postId, email]
+        `INSERT INTO ForumLikes (forumID, emailID, userName) VALUES (?, ?, ?)`,
+        [postId, email, ""] // add userName if needed
       );
-
       await db.execute(
         `UPDATE Forum SET likeCount = likeCount + 1 WHERE forumID = ?`,
         [postId]
       );
+
+      // ✅ Add contribution points
+      await updateContributionScore(email, 2);
     }
 
-    // 4. Return updated like count + whether THIS user liked it
     const [rows] = await db.execute(
       `SELECT likeCount FROM Forum WHERE forumID = ?`,
       [postId]
@@ -664,7 +665,7 @@ export async function likePost(postId: number, email: string) {
 
     return {
       likes: (rows as any[])[0].likeCount,
-      liked: !alreadyLiked, // flip state
+      liked: !alreadyLiked,
     };
   } catch (err) {
     console.error("Error in likePost:", err);
@@ -685,6 +686,8 @@ export async function addComment(
     );
 
     const commentId = (result as any).insertId;
+
+    await updateContributionScore(email, 2);
 
     return {
       id: commentId,
@@ -848,4 +851,26 @@ export async function rejectUploadRequest(requestID: number) {
     `UPDATE UploadRequest SET status = 'rejected' WHERE requestID = ?`,
     [requestID]
   );
+}
+
+export async function fetchLeaderboard(limit: number = 10) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT userName, emailID, pictureURL, currentContributionScore, highestContributionScore
+       FROM UserInfo
+       ORDER BY currentContributionScore DESC
+       LIMIT ${limit}` // nterpolate directly
+    );
+
+    return rows as {
+      userName: string;
+      emailID: string;
+      pictureURL: string;
+      currentContributionScore: number;
+      highestContributionScore: number;
+    }[];
+  } catch (err: any) {
+    console.error("Error in fetchLeaderboard:", err);
+    return [];
+  }
 }
