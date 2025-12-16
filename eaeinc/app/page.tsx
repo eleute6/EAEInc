@@ -1,14 +1,8 @@
+// Home.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSession, signIn, signOut } from "next-auth/react";
-import UserPage from "@/app/components//homepage/UserPage"; // make sure the path is correct
-
-interface User {
-  name: string;
-  email: string;
-  image: string;
-}
+import { useSession, signIn } from "next-auth/react";
+import UserPage from "@/app/components/homepage/UserPage";
 
 declare global {
   interface Window {
@@ -27,7 +21,7 @@ export default function Home() {
     );
   }
 
-  // When logged in -> show UserPage
+  // Logged in → show UserPage (which includes Header)
   if (session?.user) {
     return (
       <UserPage
@@ -40,7 +34,7 @@ export default function Home() {
     );
   }
 
-  // Not logged in -> show login page
+  // Not logged in → show login page (NO Header here)
   return (
     <main className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-sm w-full">
