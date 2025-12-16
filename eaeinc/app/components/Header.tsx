@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   BookOpen,
   Home,
-  Search,
+  Search as SearchIcon,
   Upload,
   Shield,
   Menu,
@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { searchUsers } from "@/app/serverfuns"; // server action to search users
 
 interface HeaderProps {
   user?: {
@@ -27,6 +28,44 @@ export default function Header({ user }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // Search state
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  let typingTimer: NodeJS.Timeout;
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    const data = await searchUsers(query);
+    setResults(data);
+    setShowResults(true);
+  }
+
+  async function runSearch(q: string) {
+    if (!q.trim()) {
+      setResults([]);
+      setShowResults(false);
+      return;
+    }
+    const data = await searchUsers(q);
+    setResults(data);
+    setShowResults(true);
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const q = e.target.value;
+    setQuery(q);
+
+    // clear previous timer
+    if (typingTimer) clearTimeout(typingTimer);
+
+    // debounce: wait 300ms after typing stops
+    typingTimer = setTimeout(() => {
+      runSearch(q);
+    }, 300);
+  }
 
   return (
     <header className="w-full fixed top-0 left-0 bg-[#002855] text-white z-50 shadow-md">
@@ -43,15 +82,43 @@ export default function Header({ user }: HeaderProps) {
         </Link>
 
         {/* Search Bar (desktop only) */}
-        <div className="hidden lg:flex flex-1 mx-6">
-          <form className="flex items-center space-x-2 bg-white text-gray-700 p-2 rounded-md w-full shadow-sm">
-            <Search className="h-5 text-gray-500" />
+        <div className="hidden lg:flex flex-1 mx-6 relative">
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center space-x-2 bg-white text-gray-700 p-2 rounded-md w-full shadow-sm"
+          >
+            <SearchIcon className="h-5 text-gray-500" />
             <input
               type="text"
-              placeholder="Search"
+              value={query}
+              onChange={handleChange}
+              placeholder="Search users by name or email"
               className="bg-transparent flex-1 outline-none placeholder-gray-400"
             />
           </form>
+
+          {/* Results dropdown */}
+          {showResults && results.length > 0 && (
+            <div className="absolute top-full left-0 w-full bg-white text-[#002855] rounded-md shadow-lg mt-1 z-50">
+              {results.map((u) => (
+                <Link
+                  key={u.email}
+                  href={`/profile/${encodeURIComponent(u.email)}`}
+                  className="flex items-center px-4 py-2 hover:bg-[#FFC72C] hover:text-white transition"
+                  onClick={() => setShowResults(false)}
+                >
+                  <Image
+                    src={u.image || "/default-avatar.png"}
+                    alt={u.name}
+                    width={28}
+                    height={28}
+                    className="rounded-full mr-2"
+                  />
+                  <span>{u.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Desktop Nav (only visible ≥ lg) */}
@@ -85,6 +152,7 @@ export default function Header({ user }: HeaderProps) {
             <span className="text-xs mt-1">Admin</span>
           </Link>
 
+          {/* stop here before user info */}
           {/* User Info */}
           {user && (
             <div className="ml-6 relative">
@@ -104,6 +172,13 @@ export default function Header({ user }: HeaderProps) {
               </button>
               {profileOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white text-[#002855] rounded-lg shadow-lg border border-gray-200">
+                  <Link
+                    href={`/profile/${encodeURIComponent(user.email)}`}
+                    className="block px-4 py-2 hover:bg-[#FFC72C] hover:text-white rounded-lg transition"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    Profile
+                  </Link>
                   <button
                     onClick={() => {
                       setProfileOpen(false);
@@ -135,15 +210,48 @@ export default function Header({ user }: HeaderProps) {
       {/* Mobile Menu (only visible when hamburger open) */}
       {mobileOpen && (
         <div className="lg:hidden bg-[#002855] text-white px-6 pb-4 space-y-4">
-          <form className="flex items-center space-x-2 bg-white text-gray-700 p-2 rounded-md w-full shadow-sm">
-            <Search className="h-5 text-gray-500" />
+          {/* Mobile Search */}
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center space-x-2 bg-white text-gray-700 p-2 rounded-md w-full shadow-sm"
+          >
+            <SearchIcon className="h-5 text-gray-500" />
             <input
               type="text"
-              placeholder="Search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search users by name or email"
               className="bg-transparent flex-1 outline-none placeholder-gray-400"
             />
           </form>
 
+          {/* Mobile search results */}
+          {showResults && results.length > 0 && (
+            <div className="bg-white text-[#002855] rounded-md shadow-lg mt-1 z-50">
+              {results.map((u) => (
+                <Link
+                  key={u.email}
+                  href={`/profile/${encodeURIComponent(u.email)}`}
+                  className="flex items-center px-4 py-2 hover:bg-[#FFC72C] hover:text-white transition"
+                  onClick={() => {
+                    setShowResults(false);
+                    setMobileOpen(false);
+                  }}
+                >
+                  <Image
+                    src={u.image || "/default-avatar.png"}
+                    alt={u.name}
+                    width={28}
+                    height={28}
+                    className="rounded-full mr-2"
+                  />
+                  <span>{u.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Mobile links */}
           <Link href="/" className="block hover:text-[#FFC72C] transition">
             Home
           </Link>
@@ -163,6 +271,7 @@ export default function Header({ user }: HeaderProps) {
             Admin
           </Link>
 
+          {/* Mobile Logout */}
           {user && (
             <div className="mt-4">
               <button

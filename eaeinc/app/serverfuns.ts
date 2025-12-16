@@ -874,3 +874,52 @@ export async function fetchLeaderboard(limit: number = 10) {
     return [];
   }
 }
+
+export async function searchUsers(query: string) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT userName, emailID, pictureURL 
+       FROM UserInfo 
+       WHERE LOWER(userName) LIKE LOWER(?) 
+          OR LOWER(emailID) LIKE LOWER(?)
+       LIMIT 10`,
+      [`%${query}%`, `%${query}%`]
+    );
+
+    return (rows as any[]).map((row) => ({
+      name: row.userName,
+      email: row.emailID,
+      image: row.pictureURL || "/default-avatar.png",
+    }));
+  } catch (err: any) {
+    console.error("Error in searchUsers:", err);
+    return [];
+  }
+}
+
+export async function fetchUserByEmail(email: string) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT userName, emailID, pictureURL, department, bio, currentContributionScore, highestContributionScore
+       FROM UserInfo
+       WHERE emailID = ?`,
+      [email]
+    );
+
+    if ((rows as any[]).length === 0) return null;
+
+    const row = (rows as any[])[0];
+    return {
+      name: row.userName,
+      email: row.emailID,
+      image: row.pictureURL || "/default-avatar.png",
+      department: row.department,
+      bio: row.bio,
+      currentScore: row.currentContributionScore,
+      highestScore: row.highestContributionScore,
+    };
+  } catch (err: any) {
+    console.error("Error in fetchUserByEmail:", err);
+    return null;
+  }
+}
