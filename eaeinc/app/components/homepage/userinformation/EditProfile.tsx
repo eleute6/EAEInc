@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { Button } from "../../ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "../../ui/avatar";
 import { ImageIcon, XIcon } from "lucide-react";
+import { useSession } from "next-auth/react"; // ✅ import useSession
 
 interface EditProfileProps {
   user: {
@@ -27,8 +28,11 @@ export default function EditProfile({
   const [department, setDepartment] = useState(user.department || "");
   const [bio, setBio] = useState(user.bio || "");
   const [preview, setPreview] = useState<string | null>(user.image || null);
+  const [popupMessage, setPopupMessage] = useState<string | null>(null);
+  const [popupType, setPopupType] = useState<"success" | "error" | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { update } = useSession(); // ✅ get update function
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,11 +53,14 @@ export default function EditProfile({
     });
 
     if (!response.ok) {
-      alert("Failed to update profile.");
+      setPopupMessage("Profile update unsuccessful.");
+      setPopupType("error");
       return;
     }
 
-    // Construct updated user object
+    // ✅ Refresh NextAuth session so department/bio persist after reload
+    await update();
+
     const updatedUser = {
       ...user,
       name: `${firstName} ${lastName}`,
@@ -61,12 +68,10 @@ export default function EditProfile({
       department,
       bio,
     };
-
-    // Push changes back up to parent
     onUserUpdated(updatedUser);
 
-    alert("Profile updated!");
-    onClose();
+    setPopupMessage("Profile updated successfully!");
+    setPopupType("success");
   };
 
   return (
@@ -181,6 +186,26 @@ export default function EditProfile({
           </Button>
         </div>
       </div>
+      {popupMessage && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+          <div
+            className={`p-6 rounded-lg shadow-lg ${
+              popupType === "success" ? "bg-green-500" : "bg-red-500"
+            } text-white`}
+          >
+            <p className="font-semibold">{popupMessage}</p>
+            <button
+              onClick={() => {
+                setPopupMessage(null);
+                onClose();
+              }}
+              className="mt-4 bg-white text-black px-4 py-2 rounded hover:bg-gray-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
