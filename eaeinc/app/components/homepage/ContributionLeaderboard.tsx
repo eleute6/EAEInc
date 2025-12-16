@@ -16,7 +16,7 @@ function ContributionLeaderboard() {
 
   useEffect(() => {
     const loadLeaders = async () => {
-      const data = await fetchLeaderboard(10);
+      const data = await fetchLeaderboard(3);
       setLeaders(data);
     };
     loadLeaders();
