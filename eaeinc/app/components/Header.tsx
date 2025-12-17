@@ -73,10 +73,10 @@ export default function Header({ user }: HeaderProps) {
         {/* Logo */}
         <Link href="/">
           <Image
-            src="/merrimack-logo.png"
+            src="/merrimack-college-logo.png"
             alt="Merrimack College Logo"
-            width={120}
-            height={40}
+            width={40}
+            height={20}
             priority
           />
         </Link>
@@ -210,47 +210,6 @@ export default function Header({ user }: HeaderProps) {
       {/* Mobile Menu (only visible when hamburger open) */}
       {mobileOpen && (
         <div className="lg:hidden bg-[#002855] text-white px-6 pb-4 space-y-4">
-          {/* Mobile Search */}
-          <form
-            onSubmit={handleSearch}
-            className="flex items-center space-x-2 bg-white text-gray-700 p-2 rounded-md w-full shadow-sm"
-          >
-            <SearchIcon className="h-5 text-gray-500" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search users by name or email"
-              className="bg-transparent flex-1 outline-none placeholder-gray-400"
-            />
-          </form>
-
-          {/* Mobile search results */}
-          {showResults && results.length > 0 && (
-            <div className="bg-white text-[#002855] rounded-md shadow-lg mt-1 z-50">
-              {results.map((u) => (
-                <Link
-                  key={u.email}
-                  href={`/profile/${encodeURIComponent(u.email)}`}
-                  className="flex items-center px-4 py-2 hover:bg-[#FFC72C] hover:text-white transition"
-                  onClick={() => {
-                    setShowResults(false);
-                    setMobileOpen(false);
-                  }}
-                >
-                  <Image
-                    src={u.image || "/default-avatar.png"}
-                    alt={u.name}
-                    width={28}
-                    height={28}
-                    className="rounded-full mr-2"
-                  />
-                  <span>{u.name}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-
           {/* Mobile links */}
           <Link href="/" className="block hover:text-[#FFC72C] transition">
             Home

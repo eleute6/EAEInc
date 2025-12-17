@@ -533,22 +533,31 @@ export async function fetchConsortiumUser(email: string) {
 
 /* FETCHCONSORTIUMTAG */
 /*  Function used to retrieve consortium
-    members based on a specific tag.  */
+    members based on specific tags/keywords.  */
 export async function fetchConsortiumTag(tags: string[]) {
-  // Return empty array if no tags provided
   if (tags.length === 0) return [];
 
-  // Check boolean conditions for each tag
-  const conditions = tags.map(() => `tags LIKE ?`).join(" AND ");
+  // Build OR conditions for each tag
+  const conditions = tags
+    .map(() => `LOWER(t.tagName) LIKE LOWER(?)`)
+    .join(" OR ");
   const values = tags.map((tag) => `%${tag}%`);
 
-  // Retrieve the rows from the database
   const [rows] = await db.execute(
-    `SELECT * FROM Instrument WHERE ${conditions} ORDER BY instrumentID DESC`,
-    values
+    `SELECT i.instrumentID, i.title, i.description, i.emailID, i.uploadedAt, i.fileURL,
+            GROUP_CONCAT(DISTINCT t.tagName) AS tags
+     FROM Instrument i
+     LEFT JOIN InstrumentTag it ON i.instrumentID = it.instrumentID
+     LEFT JOIN Tag t ON it.tagID = t.tagID
+     WHERE i.isDeleted = FALSE
+       AND (${conditions}
+            OR LOWER(i.title) LIKE LOWER(?)
+            OR LOWER(i.description) LIKE LOWER(?))
+     GROUP BY i.instrumentID
+     ORDER BY i.instrumentID DESC`,
+    [...values, `%${tags.join(" ")}%`, `%${tags.join(" ")}%`]
   );
 
-  // Map DB rows into Instruments objects and return
   return (rows as any[]).map((row) => ({
     id: row.instrumentID,
     title: row.title,
@@ -556,40 +565,50 @@ export async function fetchConsortiumTag(tags: string[]) {
     emailID: row.emailID,
     upload: row.uploadedAt,
     filePath: row.fileURL,
+    tags: row.tags ? row.tags.split(",") : [],
   }));
 }
 
 /* FETCHCONSORTIUMTAGNEXT */
 /*  Function used to retrieve the next set of consortium
-    members based on a specific tag.  */
+    members based on specific tags/keywords.  */
 export async function fetchConsortiumTagNext(
   tags: string[],
   lastInstrumentID: number
 ) {
-  // STEP 1 : Sanitize Tags
   if (tags.length === 0) return [];
 
-  // Check boolean conditions for each tag
-  const conditions = tags.map(() => `tags LIKE ?`).join(" AND ");
+  const conditions = tags
+    .map(() => `LOWER(t.tagName) LIKE LOWER(?)`)
+    .join(" OR ");
   const values = tags.map((tag) => `%${tag}%`);
 
   const [rows] = await db.execute(
-    "SELECT * FROM Instrument WHERE ${conditions} AND instrumentID < ? ORDER BY instrumentID DESC",
-    [values, lastInstrumentID]
-  ); //Gets the next set of items with the specified tag.
+    `SELECT i.instrumentID, i.title, i.description, i.emailID, i.uploadedAt, i.fileURL,
+            GROUP_CONCAT(DISTINCT t.tagName) AS tags
+     FROM Instrument i
+     LEFT JOIN InstrumentTag it ON i.instrumentID = it.instrumentID
+     LEFT JOIN Tag t ON it.tagID = t.tagID
+     WHERE i.isDeleted = FALSE
+       AND i.instrumentID < ?
+       AND (${conditions}
+            OR LOWER(i.title) LIKE LOWER(?)
+            OR LOWER(i.description) LIKE LOWER(?))
+     GROUP BY i.instrumentID
+     ORDER BY i.instrumentID DESC
+     LIMIT 50`,
+    [lastInstrumentID, ...values, `%${tags.join(" ")}%`, `%${tags.join(" ")}%`]
+  );
 
-  // STEP 2: Construct Instruments Array
-  const instruments: Instruments[] = (rows as any[]).map((row) => ({
+  return (rows as any[]).map((row) => ({
     id: row.instrumentID,
     title: row.title,
     description: row.description,
     emailID: row.emailID,
     upload: row.uploadedAt,
     filePath: row.fileURL,
+    tags: row.tags ? row.tags.split(",") : [],
   }));
-
-  // STEP 3: Return Instruments Array
-  return instruments;
 }
 
 /* DELETEINSTRUMENT */

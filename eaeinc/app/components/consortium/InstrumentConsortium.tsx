@@ -21,27 +21,8 @@ export default function InstrumentConsortium() {
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    const loadUploads = async () => {
-      const instruments = await fetchConsortiumAll();
-      // Map DB rows into Upload objects
-      const uploadsData: Upload[] = instruments.map((inst) => ({
-        id: inst.id,
-        title: inst.title,
-        description: inst.description,
-        keywords: inst.tags || [], // if you join tags in your query
-        author: inst.emailID,
-        date: new Date(inst.upload).toLocaleDateString(),
-        filePath: inst.filePath,
-      }));
-      setUploads(uploadsData);
-    };
-    loadUploads();
-  }, []);
-
-  // MAP INSTRUMENTS FOR QUERY CHANGE
-  // (it's pretty much the same as above, but written separately for clarity)
-  const mapInstruments = (instruments: any[]) =>
+  // Helper to map DB rows into Upload objects
+  const mapInstruments = (instruments: any[]): Upload[] =>
     instruments.map((inst) => ({
       id: inst.id,
       title: inst.title,
@@ -52,26 +33,33 @@ export default function InstrumentConsortium() {
       filePath: inst.filePath,
     }));
 
+  // Initial load: fetch all approved instruments with tags
+  useEffect(() => {
+    const loadUploads = async () => {
+      const instruments = await fetchConsortiumAll();
+      setUploads(mapInstruments(instruments));
+    };
+    loadUploads();
+  }, []);
+
+  // Handle search input
   const handleQueryChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Set the query to match the input value
     const value = e.target.value;
     setQuery(value);
 
-    // Split the query into tags
     const tags = value.toLowerCase().split(/\s+/).filter(Boolean);
 
-    // If the tags are empty, fetch all uploads
     if (tags.length === 0) {
       const instruments = await fetchConsortiumAll();
       setUploads(mapInstruments(instruments));
       return;
     }
 
-    // Fetch uploads matching the tags
     const instruments = await fetchConsortiumTag(tags);
     setUploads(mapInstruments(instruments));
   };
 
+  // Filter client-side as well (title + keywords)
   const filteredUploads = uploads.filter(
     (u) =>
       u.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -109,10 +97,10 @@ export default function InstrumentConsortium() {
 
       {/* Upload List */}
       <div className="space-y-4">
-        {uploads.length === 0 ? (
+        {filteredUploads.length === 0 ? (
           <p className="text-gray-500">No uploads found.</p>
         ) : (
-          uploads.map((upload) => (
+          filteredUploads.map((upload) => (
             <div
               key={upload.id}
               className="border border-[#002855]/20 rounded-md p-4 shadow-sm hover:shadow-md transition"
@@ -123,7 +111,6 @@ export default function InstrumentConsortium() {
               <p className="text-sm text-gray-600">
                 By {upload.author} • {upload.date}
               </p>
-              {/* Description */}
               <p className="mt-2 text-gray-700">{upload.description}</p>
 
               {/* Keywords */}
@@ -137,6 +124,7 @@ export default function InstrumentConsortium() {
                   </span>
                 ))}
               </div>
+
               {upload.filePath && (
                 <a
                   href={upload.filePath}
