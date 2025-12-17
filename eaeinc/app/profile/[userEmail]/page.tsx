@@ -1,17 +1,14 @@
-// app/profile/[userEmail]/page.tsx
-import { fetchUserByEmail, fetchApprovedUploadsByUser } from "@/app/serverfuns";
+import { fetchUserByEmail } from "@/app/serverfuns";
 import Image from "next/image";
+import UserUploads from "./UserUploads";
 
 export default async function ProfilePage(props: {
   params: Promise<{ userEmail: string }>;
 }) {
-  // Await params because Next.js 16 passes it as a Promise
   const { userEmail } = await props.params;
   const decodedEmail = decodeURIComponent(userEmail);
 
-  // Fetch user info and approved uploads
   const user = await fetchUserByEmail(decodedEmail);
-  const uploads = await fetchApprovedUploadsByUser(decodedEmail);
 
   if (!user) {
     return <div className="p-6 text-red-600">User not found.</div>;
@@ -44,38 +41,7 @@ export default async function ProfilePage(props: {
       <h2 className="text-2xl font-semibold mt-10 text-[#002855]">
         Approved Instrument Uploads
       </h2>
-      {uploads.length === 0 ? (
-        <p className="text-gray-500 mt-2">No approved uploads yet.</p>
-      ) : (
-        <div className="mt-4 max-h-[600px] overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {uploads.map((u) => (
-              <div
-                key={u.id}
-                className="p-4 border rounded-lg bg-gray-50 shadow-sm flex flex-col justify-between"
-              >
-                <div>
-                  <p className="font-medium text-lg">{u.name}</p>
-                  <p className="text-sm text-gray-600 mt-1">{u.description}</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Uploaded: {new Date(u.date).toLocaleDateString()}
-                  </p>
-                </div>
-                {u.file && (
-                  <a
-                    href={u.file}
-                    className="mt-3 text-blue-600 hover:underline text-sm"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View File
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <UserUploads email={user.email} />
     </div>
   );
 }

@@ -614,16 +614,16 @@ export async function fetchConsortiumTagNext(
 /* DELETEINSTRUMENT */
 /*  Function used to delete an instrument from
     the database based on its unique ID.    */
-export async function deleteInstrument(instrumentID: number) {
+export async function deleteInstrument(instrumentID: number, email: string) {
   try {
-    // Fairly simple process, just mark the instrument as deleted in the database.
     await db.execute(
-      "UPDATE Instrument SET isDeleted = TRUE where instrumentID = ? AND isDeleted = FALSE", //Sets deleted flag without removing instrument from DB.
-      [instrumentID]
+      `UPDATE Instrument 
+       SET isDeleted = TRUE 
+       WHERE instrumentID = ? AND emailID = ? AND isDeleted = FALSE`,
+      [instrumentID, email]
     );
   } catch (err: any) {
-    //Usual error catching.
-    console.error(err);
+    console.error("Error in deleteInstrument:", err);
   }
 }
 
@@ -947,19 +947,19 @@ export async function fetchApprovedUploadsByUser(email: string) {
   if (!email) return [];
   try {
     const [rows] = await db.execute(
-      `SELECT requestID, fileName, description, fileURL, submittedAt
-       FROM UploadRequest
-       WHERE email = ? AND status = 'approved'
-       ORDER BY submittedAt DESC`,
+      `SELECT instrumentID, title, description, fileURL, uploadedAt
+       FROM Instrument
+       WHERE emailID = ? AND isDeleted = FALSE
+       ORDER BY uploadedAt DESC`,
       [email]
     );
 
     return (rows as any[]).map((row) => ({
-      id: row.requestID,
-      name: row.fileName,
+      id: row.instrumentID,
+      name: row.title,
       description: row.description,
       file: row.fileURL,
-      date: row.submittedAt,
+      date: row.uploadedAt,
     }));
   } catch (err: any) {
     console.error("Error in fetchApprovedUploadsByUser:", err);
