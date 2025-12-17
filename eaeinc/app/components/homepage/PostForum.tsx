@@ -350,7 +350,7 @@ export default function PostForum({ user }: PostForumProps) {
                       key={c.id}
                       className="flex items-start space-x-2 text-sm text-gray-700"
                     >
-                      <span className="font-semibold">{c.userEmail}:</span>
+                      <span className="font-semibold">{c.userName}:</span>
                       <span>{c.text}</span>
                       {c.userEmail === user.email && (
                         <Button
