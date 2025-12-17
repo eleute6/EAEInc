@@ -73,10 +73,10 @@ export default function Header({ user }: HeaderProps) {
         {/* Logo */}
         <Link href="/">
           <Image
-            src="/merrimack-logo.png"
+            src="/merrimack-college-logo.png"
             alt="Merrimack College Logo"
-            width={120}
-            height={40}
+            width={40}
+            height={20}
             priority
           />
         </Link>
