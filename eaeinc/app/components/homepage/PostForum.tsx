@@ -219,7 +219,7 @@ export default function PostForum({ user }: PostForumProps) {
                 ref={fileInputRef}
                 type="file"
                 name="image"
-                accept="image/*"
+                accept="image/*,.pdf"
                 hidden
                 onChange={handleImageChange}
               />
