@@ -202,48 +202,75 @@ export default function UploadPage() {
             }}
             multiple
           >
-            <div className="relative">
-              <Combobox.Input
-                className="w-full border border-[#002855]/30 rounded-md px-4 py-2 shadow-sm focus:ring-2 focus:ring-[#FFC72C]"
-                onChange={(event) => setQuery(event.target.value)}
-                displayValue={(keywords: string[]) => keywords.join(", ")}
-                placeholder="Search or select up to 5 keywords..."
-                required
-              />
-              <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg z-10">
-                {isLoadingKeywords && (
-                  <div className="cursor-default select-none px-4 py-2 text-gray-500">
-                    Loading keywords...
-                  </div>
-                )}
-                {!isLoadingKeywords && filteredKeywords.length === 0 && (
-                  <div className="cursor-default select-none px-4 py-2 text-gray-500">
-                    No results found.
-                  </div>
-                )}
-                {filteredKeywords.map((kw) => (
-                  <Combobox.Option
-                    key={kw}
-                    value={kw}
-                    disabled={
-                      formData.keywords.length >= 5 &&
-                      !formData.keywords.includes(kw)
+            <div className="flex flex-wrap items-center gap-2 border border-[#002855]/30 rounded-md px-2 py-1 shadow-sm focus-within:ring-2 focus-within:ring-[#FFC72C]">
+              {/* Chips inline */}
+              {formData.keywords.map((kw) => (
+                <span
+                  key={kw}
+                  className="flex items-center bg-[#FFC72C]/30 text-[#002855] text-xs font-medium px-2 py-1 rounded"
+                >
+                  {kw}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        keywords: prev.keywords.filter((k) => k !== kw),
+                      }))
                     }
-                    className={({ active, disabled }) =>
-                      `cursor-pointer select-none px-4 py-2 ${
-                        disabled
-                          ? "text-gray-400 cursor-not-allowed"
-                          : active
-                          ? "bg-[#002855] text-white"
-                          : "text-gray-900"
-                      }`
-                    }
+                    className="ml-1 text-[#002855] hover:text-red-600"
                   >
-                    {kw}
-                  </Combobox.Option>
-                ))}
-              </Combobox.Options>
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+
+              {/* Input stays inline with chips */}
+              <Combobox.Input
+                className="flex-1 min-w-[120px] border-none focus:ring-0 outline-none text-sm px-2 py-1"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={
+                  formData.keywords.length < 5
+                    ? "Search or select up to 5 keywords..."
+                    : ""
+                }
+                required={formData.keywords.length === 0} // only required if none selected
+              />
             </div>
+
+            <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg z-10">
+              {isLoadingKeywords && (
+                <div className="cursor-default select-none px-4 py-2 text-gray-500">
+                  Loading keywords...
+                </div>
+              )}
+              {!isLoadingKeywords && filteredKeywords.length === 0 && (
+                <div className="cursor-default select-none px-4 py-2 text-gray-500">
+                  No results found.
+                </div>
+              )}
+              {filteredKeywords.map((kw) => (
+                <Combobox.Option
+                  key={kw}
+                  value={kw}
+                  disabled={
+                    formData.keywords.length >= 5 &&
+                    !formData.keywords.includes(kw)
+                  }
+                  className={({ active, disabled }) =>
+                    `cursor-pointer select-none px-4 py-2 ${
+                      disabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : active
+                        ? "bg-[#002855] text-white"
+                        : "text-gray-900"
+                    }`
+                  }
+                >
+                  {kw}
+                </Combobox.Option>
+              ))}
+            </Combobox.Options>
           </Combobox>
         </div>
 
