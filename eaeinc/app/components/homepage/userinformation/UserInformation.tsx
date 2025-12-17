@@ -3,10 +3,9 @@
 import { Avatar, AvatarFallback } from "../../ui/avatar";
 import React, { useState } from "react";
 import { Button } from "../../ui/button";
-import PostCreator from "./PostCreator";
 import EditProfile from "./EditProfile";
 import Image from "next/image";
-import { useSession } from "next-auth/react"; // ✅ import session hook
+import { useSession } from "next-auth/react";
 
 export interface User {
   name: string;
@@ -17,10 +16,9 @@ export interface User {
 }
 
 export default function UserInformation() {
-  const { data: session } = useSession(); // ✅ get live session
+  const { data: session } = useSession();
   const user = session?.user as User | undefined;
 
-  // local state for immediate updates from EditProfile
   const [currentUser, setUser] = useState<User | undefined>(user);
 
   if (!user) {
@@ -31,12 +29,10 @@ export default function UserInformation() {
     );
   }
 
-  // fall back to session user if local state not yet set
   const displayUser = currentUser || user;
   const [firstName, ...rest] = displayUser.name.split(" ");
   const lastName = rest.join(" ");
 
-  const [showCreatePost, setShowCreatePost] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
 
   return (
@@ -75,15 +71,8 @@ export default function UserInformation() {
         )}
       </div>
 
-      {/* Buttons */}
-      <div className="flex gap-3 mt-4 w-full">
-        <Button
-          variant="outline"
-          className="w-full md:w-1/2 border-[#003768] text-[#003768] hover:bg-[#FDB813] hover:text-white transition"
-          onClick={() => setShowCreatePost(true)}
-        >
-          Create Post
-        </Button>
+      {/* Single centered button */}
+      <div className="flex justify-center mt-4 w-full">
         <Button
           variant="outline"
           className="w-full md:w-1/2 border-[#003768] text-[#003768] hover:bg-[#FDB813] hover:text-white transition"
@@ -93,17 +82,7 @@ export default function UserInformation() {
         </Button>
       </div>
 
-      {/* Modals */}
-      {showCreatePost && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg overflow-hidden">
-            <PostCreator
-              user={displayUser}
-              onClose={() => setShowCreatePost(false)}
-            />
-          </div>
-        </div>
-      )}
+      {/* Modal */}
       {showEditProfile && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="w-full max-w-lg rounded-lg shadow-lg overflow-hidden">
