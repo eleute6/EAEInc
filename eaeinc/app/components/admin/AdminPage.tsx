@@ -116,6 +116,7 @@ export default function AdminPage() {
           name: session?.user?.name || "Admin",
           email: session?.user?.email || "",
           image: session?.user?.image || "",
+          isAdmin: session?.user?.isAdmin ?? false,
         }}
       />
 

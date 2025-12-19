@@ -112,6 +112,7 @@ export default function UploadPage() {
           name: session?.user?.name || "Admin",
           email: session?.user?.email || "",
           image: session?.user?.image || "",
+          isAdmin: session?.user?.isAdmin ?? false,
         }}
       />
       <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">
@@ -189,7 +190,7 @@ export default function UploadPage() {
         </label>
 
         {/* Keyword Dropdown */}
-        <div>
+        <div className="relative">
           <p className="font-semibold text-[#002855] mb-2">
             Select Keywords <span className="text-[#FFC72C]">*</span>
           </p>
@@ -202,12 +203,12 @@ export default function UploadPage() {
             }}
             multiple
           >
-            <div className="flex flex-wrap items-center gap-2 border border-[#002855]/30 rounded-md px-2 py-1 shadow-sm focus-within:ring-2 focus-within:ring-[#FFC72C]">
-              {/* Chips inline */}
+            {/* Fixed-height, single-line chips + input */}
+            <div className="flex items-center gap-2 border border-[#002855]/30 rounded-md px-2 shadow-sm focus-within:ring-2 focus-within:ring-[#FFC72C] h-11 overflow-x-auto whitespace-nowrap">
               {formData.keywords.map((kw) => (
                 <span
                   key={kw}
-                  className="flex items-center bg-[#FFC72C]/30 text-[#002855] text-xs font-medium px-2 py-1 rounded"
+                  className="inline-flex items-center bg-[#FFC72C]/30 text-[#002855] text-xs font-medium px-2 py-1 rounded mr-1"
                 >
                   {kw}
                   <button
@@ -225,27 +226,27 @@ export default function UploadPage() {
                 </span>
               ))}
 
-              {/* Input stays inline with chips */}
               <Combobox.Input
-                className="flex-1 min-w-[120px] border-none focus:ring-0 outline-none text-sm px-2 py-1"
+                className="border-none focus:ring-0 outline-none text-sm px-2 h-full w-[150px]"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={
                   formData.keywords.length < 5
                     ? "Search or select up to 5 keywords..."
                     : ""
                 }
-                required={formData.keywords.length === 0} // only required if none selected
+                required={formData.keywords.length === 0}
               />
             </div>
 
-            <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg z-10">
+            {/* Dropdown anchored under input only */}
+            <Combobox.Options className="absolute left-0 mt-1 max-h-48 w-64 overflow-auto rounded-md border bg-white shadow-lg z-10 text-sm">
               {isLoadingKeywords && (
-                <div className="cursor-default select-none px-4 py-2 text-gray-500">
+                <div className="cursor-default select-none px-2 py-1 text-gray-500 text-xs">
                   Loading keywords...
                 </div>
               )}
               {!isLoadingKeywords && filteredKeywords.length === 0 && (
-                <div className="cursor-default select-none px-4 py-2 text-gray-500">
+                <div className="cursor-default select-none px-2 py-1 text-gray-500 text-xs">
                   No results found.
                 </div>
               )}
@@ -258,7 +259,7 @@ export default function UploadPage() {
                     !formData.keywords.includes(kw)
                   }
                   className={({ active, disabled }) =>
-                    `cursor-pointer select-none px-4 py-2 ${
+                    `cursor-pointer select-none px-2 py-1 ${
                       disabled
                         ? "text-gray-400 cursor-not-allowed"
                         : active

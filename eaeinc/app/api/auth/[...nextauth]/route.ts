@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { initialUserInfo } from "@/app/serverfuns"; // adjust path if needed
+import { initialUserInfo } from "@/app/serverfuns";
 
 const handler = NextAuth({
   providers: [
@@ -8,9 +8,7 @@ const handler = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: { params: { prompt: "select_account" } },
-      httpOptions: {
-        timeout: 40000,
-      },
+      httpOptions: { timeout: 40000 },
     }),
   ],
 
@@ -19,7 +17,7 @@ const handler = NextAuth({
   },
 
   callbacks: {
-    // When a user signs in, insert them into UserInfo if not already there
+    // ✅ Create user in DB on first login
     async signIn({ user }) {
       try {
         if (user?.email) {
@@ -27,62 +25,43 @@ const handler = NextAuth({
             user.name || "Unknown User",
             user.email,
             user.image || "",
-            false // set to true if you want to mark admins
+            false // default: not admin
           );
         }
-      } catch (err) {
-        console.error("Error inserting user into UserInfo:", err);
-      }
+      } catch (err) {}
       return true;
     },
 
-    // Store token in JWT
+    // ✅ Build JWT token
     async jwt({ token, user }) {
+      // ✅ Guarantee token.user always exists
       if (!token.user) {
-        token.user = {}; // initialize so it's never undefined
+        token.user = {
+          name: null,
+          email: null,
+          image: null,
+          department: null,
+          bio: null,
+          isAdmin: false,
+        };
       }
 
+      // ✅ Copy Google profile fields on first login
       if (user) {
         token.user.name = user.name;
         token.user.email = user.email;
         token.user.image = user.image;
       }
 
-      // fetch department/bio if needed
-      if (!token.user?.email) {
-        return token; // bail out if email is missing
-      }
+      // ✅ If no email, stop here
+      if (!token.user.email) return token;
 
-      if (!token.user.department || !token.user.bio) {
-        try {
-          const res = await fetch(
-            `${process.env.BACKEND_USER_URL!}?email=${encodeURIComponent(
-              token.user.email
-            )}`
-          );
-          const userData = await res.json();
-          if (userData.status === "valid") {
-            token.user.department = userData.department ?? null;
-            token.user.bio = userData.bio ?? null;
-          }
-        } catch (err) {
-          console.error("jwt callback fetch error:", err);
-        }
-      }
-
-      return token;
-    },
-
-    // Attach user info to session
-    async session({ session, token }) {
-      const email = token.user?.email;
-      if (!email) {
-        return session; // bail out safely
-      }
-
+      // ✅ Fetch full user info from your backend
       try {
         const res = await fetch(
-          `${process.env.BACKEND_USER_URL!}?email=${encodeURIComponent(email)}`
+          `${process.env.BACKEND_USER_URL!}?email=${encodeURIComponent(
+            token.user.email
+          )}`
         );
         const userData = await res.json();
 
@@ -91,14 +70,42 @@ const handler = NextAuth({
             name: userData.name,
             email: userData.email,
             image: userData.image,
-            department: userData.department,
-            bio: userData.bio,
+            department: userData.department ?? null,
+            bio: userData.bio ?? null,
+            isAdmin: userData.isAdmin ?? false,
           };
-          session.user = token.user as any;
         }
-      } catch (err) {
-        console.error("session callback error:", err);
-      }
+      } catch (err) {}
+
+      return token;
+    },
+
+    // ✅ Build session object
+    async session({ session, token }) {
+      if (!token.user?.email) return session;
+
+      try {
+        const res = await fetch(
+          `${process.env.BACKEND_USER_URL!}?email=${encodeURIComponent(
+            token.user.email
+          )}`
+        );
+        const userData = await res.json();
+
+        if (userData.status === "valid") {
+          const fullUser = {
+            name: userData.name,
+            email: userData.email,
+            image: userData.image,
+            department: userData.department ?? null,
+            bio: userData.bio ?? null,
+            isAdmin: userData.isAdmin ?? false,
+          };
+
+          token.user = fullUser;
+          session.user = fullUser as any;
+        }
+      } catch (err) {}
 
       return session;
     },

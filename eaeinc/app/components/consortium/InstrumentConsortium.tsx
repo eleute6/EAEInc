@@ -76,6 +76,7 @@ export default function InstrumentConsortium() {
           name: session?.user?.name || "Admin",
           email: session?.user?.email || "",
           image: session?.user?.image || "",
+          isAdmin: session?.user?.isAdmin ?? false,
         }}
       />
       <p className="text-[#002855] font-medium bg-[#FFC72C]/20 p-3 rounded-md">

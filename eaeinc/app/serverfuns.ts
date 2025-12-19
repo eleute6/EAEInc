@@ -55,7 +55,6 @@ export async function fetchInfoSmall(email: string) {
     );
 
     if ((rows as any[]).length === 0) {
-      console.log("No user found for:", email);
       return {
         name: "Unknown User",
         picture: "",
@@ -91,7 +90,6 @@ export async function fetchInfoFull(email: string) {
     );
 
     if ((rows as any[]).length === 0) {
-      console.log("No full info found for:", email);
       return {
         name: "Currently Empty",
         picture: "",
@@ -140,8 +138,6 @@ export async function initialUserInfo(
   image: string | null,
   admin: boolean
 ) {
-  console.log("initialUserInfo called with:", { name, email, image, admin });
-
   try {
     const [rows] = await db.execute(
       "SELECT userName, pictureURL FROM UserInfo WHERE emailID = ?",
@@ -366,7 +362,6 @@ export async function fetchComments(forumID: number) {
     body: row.body,
     // extra fields for display
     userName: row.userName,
-    pictureURL: row.pictureURL,
   }));
 
   return comments;
@@ -737,7 +732,6 @@ export async function createEvent(
        VALUES (?, ?, ?, ?, ?, ?)`,
       [title, description, emailID, startDateTime, endDateTime, location]
     );
-    console.log("Event created:", title);
   } catch (err: any) {
     console.error("Error in createEvent:", err);
   }
@@ -764,7 +758,6 @@ export async function fetchEvents() {
 export async function deleteEvent(eventID: number) {
   try {
     await db.execute("DELETE FROM UpcomingEvents WHERE eventID = ?", [eventID]);
-    console.log("Deleted event:", eventID);
   } catch (err: any) {
     console.error("Error in deleteEvent:", err);
   }
