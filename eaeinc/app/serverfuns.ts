@@ -55,7 +55,6 @@ export async function fetchInfoSmall(email: string) {
     );
 
     if ((rows as any[]).length === 0) {
-      console.log("No user found for:", email);
       return {
         name: "Unknown User",
         picture: "",
@@ -91,7 +90,6 @@ export async function fetchInfoFull(email: string) {
     );
 
     if ((rows as any[]).length === 0) {
-      console.log("No full info found for:", email);
       return {
         name: "Currently Empty",
         picture: "",
@@ -140,8 +138,6 @@ export async function initialUserInfo(
   image: string | null,
   admin: boolean
 ) {
-  console.log("initialUserInfo called with:", { name, email, image, admin });
-
   try {
     const [rows] = await db.execute(
       "SELECT userName, pictureURL FROM UserInfo WHERE emailID = ?",
@@ -366,7 +362,6 @@ export async function fetchComments(forumID: number) {
     body: row.body,
     // extra fields for display
     userName: row.userName,
-    pictureURL: row.pictureURL,
   }));
 
   return comments;
@@ -614,16 +609,16 @@ export async function fetchConsortiumTagNext(
 /* DELETEINSTRUMENT */
 /*  Function used to delete an instrument from
     the database based on its unique ID.    */
-export async function deleteInstrument(instrumentID: number) {
+export async function deleteInstrument(instrumentID: number, email: string) {
   try {
-    // Fairly simple process, just mark the instrument as deleted in the database.
     await db.execute(
-      "UPDATE Instrument SET isDeleted = TRUE where instrumentID = ? AND isDeleted = FALSE", //Sets deleted flag without removing instrument from DB.
-      [instrumentID]
+      `UPDATE Instrument 
+       SET isDeleted = TRUE 
+       WHERE instrumentID = ? AND emailID = ? AND isDeleted = FALSE`,
+      [instrumentID, email]
     );
   } catch (err: any) {
-    //Usual error catching.
-    console.error(err);
+    console.error("Error in deleteInstrument:", err);
   }
 }
 
@@ -737,7 +732,6 @@ export async function createEvent(
        VALUES (?, ?, ?, ?, ?, ?)`,
       [title, description, emailID, startDateTime, endDateTime, location]
     );
-    console.log("Event created:", title);
   } catch (err: any) {
     console.error("Error in createEvent:", err);
   }
@@ -764,7 +758,6 @@ export async function fetchEvents() {
 export async function deleteEvent(eventID: number) {
   try {
     await db.execute("DELETE FROM UpcomingEvents WHERE eventID = ?", [eventID]);
-    console.log("Deleted event:", eventID);
   } catch (err: any) {
     console.error("Error in deleteEvent:", err);
   }
@@ -947,19 +940,19 @@ export async function fetchApprovedUploadsByUser(email: string) {
   if (!email) return [];
   try {
     const [rows] = await db.execute(
-      `SELECT requestID, fileName, description, fileURL, submittedAt
-       FROM UploadRequest
-       WHERE email = ? AND status = 'approved'
-       ORDER BY submittedAt DESC`,
+      `SELECT instrumentID, title, description, fileURL, uploadedAt
+       FROM Instrument
+       WHERE emailID = ? AND isDeleted = FALSE
+       ORDER BY uploadedAt DESC`,
       [email]
     );
 
     return (rows as any[]).map((row) => ({
-      id: row.requestID,
-      name: row.fileName,
+      id: row.instrumentID,
+      name: row.title,
       description: row.description,
       file: row.fileURL,
-      date: row.submittedAt,
+      date: row.uploadedAt,
     }));
   } catch (err: any) {
     console.error("Error in fetchApprovedUploadsByUser:", err);

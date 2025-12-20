@@ -10,6 +10,7 @@ declare module "next-auth" {
       image?: string | null;
       department?: string | null;
       bio?: string | null;
+      isAdmin: boolean;
     };
     expires: string;
   }
@@ -17,6 +18,7 @@ declare module "next-auth" {
   interface User extends DefaultUser {
     department?: string | null;
     bio?: string | null;
+    isAdmin: boolean;
   }
 }
 
@@ -29,6 +31,7 @@ declare module "next-auth/jwt" {
       image?: string | null;
       department?: string | null;
       bio?: string | null;
+      isAdmin: boolean;
     };
   }
 }
