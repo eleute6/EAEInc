@@ -28,3 +28,5 @@ Requirements Document Link: https://docs.google.com/document/d/1Ade3tVU4X-7kqeqc
 Functional Specifications Document Link: https://docs.google.com/document/d/1xkArV3JtnkEcrz7OUe9s0ItwM9nVrACTcvVqYFqhmGA/edit?tab=t.0
 
 User Manual Document Link: https://docs.google.com/document/d/1DUtlQpt0nD89Sjls-U9QW-Evg8Xqw_XFXbq8dUAXjPY/edit?tab=t.0
+
+Technical Specification Document Link: https://docs.google.com/document/d/1lySSYdOwRdqzZYLBEBQcB8re5qYFfrSxmJs9Av02yiQ/edit?tab=t.0
